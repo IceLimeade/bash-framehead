@@ -248,7 +248,7 @@ net::dns::propagation() {
 # ==============================================================================
 
 # List all network interfaces
-net::interfaces() {
+net::interface::list() {
     if runtime::has_command ip; then
         ip link show 2>/dev/null | awk -F': ' '/^[0-9]+:/{print $2}' | tr -d ' '
     elif runtime::has_command ifconfig; then
@@ -300,7 +300,7 @@ net::gateway() {
 
 # Get network interface statistics (rx/tx bytes)
 # Usage: net::interface::stats interface
-net::interface::stats() {
+net::interface::stat() {
     local iface="${1:-eth0}"
     local rx tx
     if [[ -f "/sys/class/net/$iface/statistics/rx_bytes" ]]; then
@@ -308,9 +308,13 @@ net::interface::stats() {
         tx=$(cat "/sys/class/net/$iface/statistics/tx_bytes")
         echo "rx: $rx bytes"
         echo "tx: $tx bytes"
+        return
     elif runtime::has_command ip; then
         ip -s link show "$iface" 2>/dev/null
+        return
     fi
+
+    return 1
 }
 
 # ==============================================================================
