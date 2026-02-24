@@ -754,7 +754,7 @@ string::base64_decode::pure() {
         byte3=$(( ((c & 3) << 6) | d ))
 
         printf "\\$(printf '%03o' $byte1)"
-        (( i+2 < ${##s} )) && printf "\\$(printf '%03o' $byte2)"
+        (( i+2 < ${#s} )) && printf "\\$(printf '%03o' $byte2)"
         (( i+3 < ${#s}  )) && printf "\\$(printf '%03o' $byte3)"
     done
     echo
