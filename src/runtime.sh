@@ -3,12 +3,46 @@ runtime::is_terminal() {
   # Thorough check for all standard file descriptors (stdin, stdout, stderr)
   [[ -t 0 && -t 1 && -t 2 ]]
 }
-runtime::is_terminal::lazy() {
+
+runtime::is_terminal::stdin() {
+  [[ -t 0 ]]
+}
+
+runtime::is_terminal::stdout() {
   [[ -t 1 ]]
+}
+
+runtime::is_terminal::stderr() {
+  [[ -t 2 ]]
+}
+
+runtime::is_traced() {
+    [[ "$-" == *x* ]] || [[ -n "$BASH_XTRACEFD" ]]
+}
+
+runtime::is_verbose() {
+    [[ "$-" == *v* ]]
+}
+
+runtime::errexit_enabled() {
+    [[ "$-" == *e* ]]
+}
+
+runtime::nounset_enabled() {
+    [[ "$-" == *u* ]]
+}
+
+runtime::noclobber_enabled() {
+    [[ "$-" == *C* ]]
 }
 
 runtime::is_interactive() {
   [[ $- == *i* ]]
+}
+
+runtime::has_flag() {
+    local flag="$1"
+    [[ "$-" == *"$flag"* ]]
 }
 
 runtime::is_login() {
@@ -22,6 +56,51 @@ runtime::is_sourced() {
 runtime::is_bash() {
   [[ -n "$BASH_VERSION" ]]
 }
+
+runtime::is_pipe() {
+  # Check if stdin is a pipe
+  [[ -p /dev/stdin ]] && return 0
+
+  # Check if stdin is redirected from a file
+  [[ ! -t 0 ]] && return 0
+
+  # Only check jobs if we're not interactive
+  if ! runtime::is_interactive && [[ -n "$(jobs -p)" ]]; then
+    return 0
+  fi
+
+  return 1
+}
+
+runtime::is_redirected() {
+  # Check if any std descriptor is redirected
+  [[ ! -t 0 ]] || [[ ! -t 1 ]] || [[ ! -t 2 ]]
+}
+
+runtime::is_subshell() {
+    [[ "$BASH_SUBSHELL" -gt 0 ]]
+}
+
+runtime::job_controlled() {
+    [[ "$-" == *m* ]]
+}
+
+runtime::debug_trapped() {
+    [[ -n "$(trap -p DEBUG)" ]]
+}
+
+runtime::braceexpand_enabled() {
+    [[ "$-" == *B* ]]
+}
+
+runtime::histexpand_enabled() {
+    [[ "$-" == *H* ]]
+}
+
+runtime::physical_cd_enabled() {
+    [[ "$-" == *P* ]]
+}
+
 
 runtime::has_command() {
   command -v "$1" >/dev/null 2>&1
@@ -39,6 +118,11 @@ runtime::sysinit() {
   ps -p 1 -o comm=
 }
 
+runtime::is_sudo() {
+  [[ -n "$SUDO_USER" ]]
+}
+
+
 runtime::is_ci() {
   [[ -n "$CI" ]] ||
     [[ -n "$GITHUB_ACTIONS" ]] ||
@@ -49,7 +133,9 @@ runtime::is_ci() {
     [[ -n "$BITBUCKET_BUILD_NUMBER" ]] ||
     [[ -n "$TEAMCITY_VERSION" ]] ||
     [[ -n "$DRONE" ]] ||
-    [[ -n "$CODEBUILD_BUILD_ID" ]]
+    [[ -n "$CODEBUILD_BUILD_ID" ]] ||
+    [[ -n "$AZURE_HTTP_USER_AGENT" ]] ||  # Azure DevOps
+    [[ -n "$BUILDKITE" ]]  # Buildkite
 }
 
 runtime::kernel_version() {
@@ -84,7 +170,7 @@ runtime::exec_root() {
     doas "$@"
   elif runtime::has_command su; then
     # su -c takes a single string, fragile with spaces in arguments
-    su -c "$*" root
+    su -c "exec $(printf '%q ' "$@")" root
   else
     echo "runtime::request_root: no privilege escalation method found" >&2
     return 1
@@ -142,8 +228,81 @@ runtime::is_minimum_bash() {
 }
 
 runtime::is_container() {
-  [[ -f /.dockerenv ]] || [[ -f /run/.containerenv ]]
+  [[ -f /.dockerenv ]] ||
+  [[ -f /run/.containerenv ]] ||
+  grep -q "docker\|lxc\|kubepods" /proc/1/cgroup 2>/dev/null ||
+  [[ -n "$CONTAINER" ]] ||
+  [[ -n "$KUBERNETES_SERVICE_HOST" ]]
 }
+
+runtime::supports_color() {
+  # Check if terminal supports color
+  [[ -t 1 ]] && [[ "$TERM" != "dumb" ]] && {
+    [[ -n "$COLORTERM" ]] ||
+    [[ "$TERM" =~ ^(xterm|screen|vt100|linux|ansi) ]] || {
+      local colors
+      colors=$(tput colors 2>/dev/null)
+      [[ -n "$colors" && "$colors" -ge 8 ]]
+    }
+  }
+}
+
+
+runtime::supports_truecolor() {
+  [[ -n "$COLORTERM" ]] && [[ "$COLORTERM" =~ ^(truecolor|24bit) ]]
+}
+
+runtime::is_multiplexer() {
+  [[ -n "$STY" ]] || [[ -n "$TMUX" ]]
+}
+
+runtime::is_tmux() {
+  [[ -n "$TMUX" ]]
+}
+
+runtime::screen_session() {
+  echo "${STY:-${TMUX:-none}}"
+}
+
+runtime::is_ssh() {
+  [[ -n "$SSH_CLIENT" ]] ||
+  [[ -n "$SSH_TTY" ]] ||
+  [[ -n "$SSH_CONNECTION" ]]
+}
+
+runtime::ssh_client() {
+  echo "${SSH_CLIENT%% *}"  # First part is client IP
+}
+
+runtime::is_tty() {
+  # Check if we have a controlling terminal
+  [[ -t 0 ]] && tty -s 2>/dev/null
+}
+
+runtime::tty_name() {
+  tty 2>/dev/null || echo "not a tty"
+}
+
+runtime::is_pty() {
+  # Check if we're in a pseudo-terminal
+  [[ "$(tty)" =~ ^/dev/pts/[0-9]+ ]]
+}
+
+
+runtime::is_virtualized() {
+  if [[ $(runtime::os) == "linux" ]]; then
+    if [[ -f /proc/cpuinfo ]]; then
+      grep -q "hypervisor" /proc/cpuinfo && return 0
+    fi
+    if [[ -f /sys/class/dmi/id/product_name ]]; then
+      local product
+      product=$(cat /sys/class/dmi/id/product_name 2>/dev/null)
+      [[ "$product" =~ (VirtualBox|VMware|KVM|QEMU|Xen|Hyper-V) ]] && return 0
+    fi
+  fi
+  return 1
+}
+
 
 runtime::pm() {
   if runtime::has_command apt-get; then
