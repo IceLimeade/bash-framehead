@@ -103,7 +103,6 @@ fs::is_readable()   { [[ -r "$1" ]]; }
 fs::is_writable()   { [[ -w "$1" ]]; }
 fs::is_executable() { [[ -x "$1" ]]; }
 fs::is_empty()      { [[ -f "$1" && ! -s "$1" ]] || [[ -d "$1" && -z "$(ls -A "$1" 2>/dev/null)" ]]; }
-fs::is_not_empty()  { ! fs::is_empty "$1"; }
 
 # Check if two paths resolve to the same file (inode comparison)
 fs::is_same() {
