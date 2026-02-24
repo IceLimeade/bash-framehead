@@ -717,6 +717,49 @@ string::base64_decode() {
     esac
 }
 
+string::base64_encode::pure() {
+    local s="$1" out="" i a b c
+    local _B64="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+
+    for (( i=0; i<${#s}; i+=3 )); do
+        a=$(printf '%d' "'${s:$i:1}")
+        b=$(( i+1 < ${#s} ? $(printf '%d' "'${s:$((i+1)):1}") : 0 ))
+        c=$(( i+2 < ${#s} ? $(printf '%d' "'${s:$((i+2)):1}") : 0 ))
+
+        out+="${_B64:$(( (a >> 2) & 63 )):1}"
+        out+="${_B64:$(( ((a << 4) | (b >> 4)) & 63 )):1}"
+        out+="${_B64:$(( i+1 < ${#s} ? ((b << 2) | (c >> 6)) & 63 : 64 )):1}"
+        out+="${_B64:$(( i+2 < ${#s} ? c & 63 : 64 )):1}"
+    done
+
+    echo "$out"
+}
+
+string::base64_decode::pure() {
+    local s="$1" out="" i
+    local -i a b c d byte1 byte2 byte3
+    local _B64="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+
+    # strip padding
+    s="${s//=}"
+
+    for (( i=0; i<${#s}; i+=4 )); do
+        a="${_B64%${s:$i:1}*}"     ; a="${#a}"
+        b="${_B64%${s:$((i+1)):1}*}"; b="${#b}"
+        c="${_B64%${s:$((i+2)):1}*}"; c="${#c}"
+        d="${_B64%${s:$((i+3)):1}*}"; d="${#d}"
+
+        byte1=$(( (a << 2) | (b >> 4) ))
+        byte2=$(( ((b & 15) << 4) | (c >> 2) ))
+        byte3=$(( ((c & 3) << 6) | d ))
+
+        printf "\\$(printf '%03o' $byte1)"
+        (( i+2 < ${##s} )) && printf "\\$(printf '%03o' $byte2)"
+        (( i+3 < ${#s}  )) && printf "\\$(printf '%03o' $byte3)"
+    done
+    echo
+}
+
 # MD5 hash of a string
 # Requires: md5sum (Linux) or md5 (macOS)
 string::md5() {
