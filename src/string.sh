@@ -9,81 +9,80 @@
 # Length of a string
 # Usage: string::length str
 string::length() {
-    echo "${#1}"
+  echo "${#1}"
 }
 
 # Check if string is empty
 string::is_empty() {
-    [[ -z "$1" ]]
+  [[ -z "$1" ]]
 }
 
 # Check if string is non-empty
 string::is_not_empty() {
-    [[ -n "$1" ]]
+  [[ -n "$1" ]]
 }
 
 # Check if string contains substring
 # Usage: string::contains haystack needle
 string::contains() {
-    [[ "$1" == *"$2"* ]]
+  [[ "$1" == *"$2"* ]]
 }
 
 # Check if string starts with prefix
 # Usage: string::starts_with str prefix
 string::starts_with() {
-    [[ "$1" == "$2"* ]]
+  [[ "$1" == "$2"* ]]
 }
 
 # Check if string ends with suffix
 # Usage: string::ends_with str suffix
 string::ends_with() {
-    [[ "$1" == *"$2" ]]
+  [[ "$1" == *"$2" ]]
 }
 
 # Check if string matches a regex
 # Usage: string::matches str regex
 string::matches() {
-    [[ "$1" =~ $2 ]]
+  [[ "$1" =~ $2 ]]
 }
 
 # Check if string is a valid integer
 string::is_integer() {
-    [[ "$1" =~ ^-?[0-9]+$ ]]
+  [[ "$1" =~ ^-?[0-9]+$ ]]
 }
 
 # Check if string is a valid float
 string::is_float() {
-    [[ "$1" =~ ^-?[0-9]+(\.[0-9]+)?([Ee][+-]?[0-9]+)?$ ]]
+  [[ "$1" =~ ^-?[0-9]+(\.[0-9]+)?([Ee][+-]?[0-9]+)?$ ]]
 }
 
 string::is_hex() {
-    [[ "$1" =~ ^(0[xX])?[0-9A-Fa-f]+$ ]]
+  [[ "$1" =~ ^(0[xX])?[0-9A-Fa-f]+$ ]]
 }
 
 string::is_bin() {
-    [[ "$1" =~ ^0b[01]+$ ]]
+  [[ "$1" =~ ^0b[01]+$ ]]
 }
 
 string::is_octal() {
-    [[ "$1" =~ ^0[0-7]+$ ]]
+  [[ "$1" =~ ^0[0-7]+$ ]]
 }
 
 string::is_numeric() {
-    # accepts int, float, hex, binary, octal
-    string::is_integer "$1" || string::is_float "$1" || \
-    string::is_hex "$1"     || string::is_bin "$1"   || \
+  # accepts int, float, hex, binary, octal
+  string::is_integer "$1" || string::is_float "$1" ||
+    string::is_hex "$1" || string::is_bin "$1" ||
     string::is_octal "$1"
 }
 
-
 # Check if string is alphanumeric only
 string::is_alnum() {
-    [[ "$1" =~ ^[a-zA-Z0-9]+$ ]]
+  [[ "$1" =~ ^[a-zA-Z0-9]+$ ]]
 }
 
 # Check if string is alphabetic only
 string::is_alpha() {
-    [[ "$1" =~ ^[a-zA-Z]+$ ]]
+  [[ "$1" =~ ^[a-zA-Z]+$ ]]
 }
 
 # ==============================================================================
@@ -92,39 +91,39 @@ string::is_alpha() {
 
 # Convert to uppercase
 string::upper() {
-    echo "${1^^}"
+  echo "${1^^}"
 }
 
 # Convert to uppercase (Bash 3 compatible)
 string::upper::legacy() {
-    echo "$1" | tr '[:lower:]' '[:upper:]'
+  echo "$1" | tr '[:lower:]' '[:upper:]'
 }
 
 # Convert to lowercase
 string::lower() {
-    echo "${1,,}"
+  echo "${1,,}"
 }
 
 # Convert to lowercase (Bash 3 compatible)
 string::lower::legacy() {
-    echo "$1" | tr '[:upper:]' '[:lower:]'
+  echo "$1" | tr '[:upper:]' '[:lower:]'
 }
 
 # Capitalise first character only
 string::capitalise() {
-    echo "${1^}"
+  echo "${1^}"
 }
 
 # Capitalise first character (Bash 3 compatible)
 string::capitalise::legacy() {
-    local s="$1"
-    echo "$(echo "${s:0:1}" | tr '[:lower:]' '[:upper:]')${s:1}"
+  local s="$1"
+  echo "$(echo "${s:0:1}" | tr '[:lower:]' '[:upper:]')${s:1}"
 }
 
 # Convert to title case (capitalise first letter of each word)
 # Requires: awk
 string::title() {
-    echo "$1" | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) tolower(substr($i,2)); print}'
+  echo "$1" | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) tolower(substr($i,2)); print}'
 }
 
 # ==============================================================================
@@ -147,329 +146,331 @@ string::title() {
 
 # Internal: split any common convention into space-separated words (lowercase)
 _string::to_words() {
-    local s="$1"
-    # Insert space before uppercase runs (camel/pascal → words)
-    s="$(echo "$s" | sed 's/\([a-z]\)\([A-Z]\)/\1 \2/g')"
-    # Replace common separators with spaces
-    s="${s//_/ }"
-    s="${s//-/ }"
-    s="${s//./ }"
-    s="${s//\// }"
-    # Lowercase everything
-    echo "${s,,}"
+  local s="$1"
+  # Insert space before uppercase runs (camel/pascal → words)
+  s="$(echo "$s" | sed 's/\([a-z]\)\([A-Z]\)/\1 \2/g')"
+  # Replace common separators with spaces
+  s="${s//_/ }"
+  s="${s//-/ }"
+  s="${s//./ }"
+  s="${s//\// }"
+  # Lowercase everything
+  echo "${s,,}"
 }
 
 # plain (space-separated) → snake_case
 # Usage: string::plain_to_snake "hello world" → "hello_world"
 string::plain_to_snake() {
-    local s="${1// /_}"
-    echo "${s,,}"
+  local s="${1// /_}"
+  echo "${s,,}"
 }
 
 # plain → kebab-case
 string::plain_to_kebab() {
-    local s="${1// /-}"
-    echo "${s,,}"
+  local s="${1// /-}"
+  echo "${s,,}"
 }
 
 # plain → camelCase
 string::plain_to_camel() {
-    local result="" first=true
-    for word in $1; do
-        if $first; then result+="${word,,}"; first=false
-        else result+="${word^}"; fi
-    done
-    echo "$result"
+  local result="" first=true
+  for word in $1; do
+    if $first; then
+      result+="${word,,}"
+      first=false
+    else result+="${word^}"; fi
+  done
+  echo "$result"
 }
 
 # plain → PascalCase
 string::plain_to_pascal() {
-    local result=""
-    for word in $1; do result+="${word^}"; done
-    echo "$result"
+  local result=""
+  for word in $1; do result+="${word^}"; done
+  echo "$result"
 }
 
 # plain → CONSTANT_CASE
 string::plain_to_constant() {
-    local s="${1// /_}"
-    echo "${s^^}"
+  local s="${1// /_}"
+  echo "${s^^}"
 }
 
 # plain → dot.case
 string::plain_to_dot() {
-    local s="${1// /.}"
-    echo "${s,,}"
+  local s="${1// /.}"
+  echo "${s,,}"
 }
 
 # plain → path/case
 string::plain_to_path() {
-    local s="${1// //}"
-    echo "${s,,}"
+  local s="${1// //}"
+  echo "${s,,}"
 }
 
 # snake_case → plain
 string::snake_to_plain() {
-    echo "${1//_/ }"
+  echo "${1//_/ }"
 }
 
 # snake_case → kebab-case
 string::snake_to_kebab() {
-    echo "${1//_/-}"
+  echo "${1//_/-}"
 }
 
 # snake_case → camelCase
 string::snake_to_camel() {
-    string::plain_to_camel "${1//_/ }"
+  string::plain_to_camel "${1//_/ }"
 }
 
 # snake_case → PascalCase
 string::snake_to_pascal() {
-    string::plain_to_pascal "${1//_/ }"
+  string::plain_to_pascal "${1//_/ }"
 }
 
 # snake_case → CONSTANT_CASE
 string::snake_to_constant() {
-    echo "${1^^}"
+  echo "${1^^}"
 }
 
 # snake_case → dot.case
 string::snake_to_dot() {
-    echo "${1//_/.}"
+  echo "${1//_/.}"
 }
 
 # snake_case → path/case
 string::snake_to_path() {
-    echo "${1//_//}"
+  echo "${1//_//}"
 }
 
 # kebab-case → plain
 string::kebab_to_plain() {
-    echo "${1//-/ }"
+  echo "${1//-/ }"
 }
 
 # kebab-case → snake_case
 string::kebab_to_snake() {
-    echo "${1//-/_}"
+  echo "${1//-/_}"
 }
 
 # kebab-case → camelCase
 string::kebab_to_camel() {
-    string::plain_to_camel "${1//-/ }"
+  string::plain_to_camel "${1//-/ }"
 }
 
 # kebab-case → PascalCase
 string::kebab_to_pascal() {
-    string::plain_to_pascal "${1//-/ }"
+  string::plain_to_pascal "${1//-/ }"
 }
 
 # kebab-case → CONSTANT_CASE
 string::kebab_to_constant() {
-    local s="${1//-/_}"
-    echo "${s^^}"
+  local s="${1//-/_}"
+  echo "${s^^}"
 }
 
 # kebab-case → dot.case
 string::kebab_to_dot() {
-    echo "${1//-/.}"
+  echo "${1//-/.}"
 }
 
 # kebab-case → path/case
 string::kebab_to_path() {
-    echo "${1//-//}"
+  echo "${1//-//}"
 }
 
 # camelCase → plain
 string::camel_to_plain() {
-    _string::to_words "$1"
+  _string::to_words "$1"
 }
 
 # camelCase → snake_case
 string::camel_to_snake() {
-    local words
-    words=$(_string::to_words "$1")
-    echo "${words// /_}"
+  local words
+  words=$(_string::to_words "$1")
+  echo "${words// /_}"
 }
 
 # camelCase → kebab-case
 string::camel_to_kebab() {
-    local words
-    words=$(_string::to_words "$1")
-    echo "${words// /-}"
+  local words
+  words=$(_string::to_words "$1")
+  echo "${words// /-}"
 }
 
 # camelCase → PascalCase
 string::camel_to_pascal() {
-    string::plain_to_pascal "$(_string::to_words "$1")"
+  string::plain_to_pascal "$(_string::to_words "$1")"
 }
 
 # camelCase → CONSTANT_CASE
 string::camel_to_constant() {
-    local words
-    words=$(_string::to_words "$1")
-    local s="${words// /_}"
-    echo "${s^^}"
+  local words
+  words=$(_string::to_words "$1")
+  local s="${words// /_}"
+  echo "${s^^}"
 }
 
 # camelCase → dot.case
 string::camel_to_dot() {
-    local words
-    words=$(_string::to_words "$1")
-    echo "${words// /.}"
+  local words
+  words=$(_string::to_words "$1")
+  echo "${words// /.}"
 }
 
 # camelCase → path/case
 string::camel_to_path() {
-    local words
-    words=$(_string::to_words "$1")
-    echo "${words// //}"
+  local words
+  words=$(_string::to_words "$1")
+  echo "${words// //}"
 }
 
 # PascalCase → plain
 string::pascal_to_plain() {
-    _string::to_words "$1"
+  _string::to_words "$1"
 }
 
 # PascalCase → snake_case
 string::pascal_to_snake() {
-    string::camel_to_snake "$1"
+  string::camel_to_snake "$1"
 }
 
 # PascalCase → kebab-case
 string::pascal_to_kebab() {
-    string::camel_to_kebab "$1"
+  string::camel_to_kebab "$1"
 }
 
 # PascalCase → camelCase
 string::pascal_to_camel() {
-    local words
-    words=$(_string::to_words "$1")
-    string::plain_to_camel "$words"
+  local words
+  words=$(_string::to_words "$1")
+  string::plain_to_camel "$words"
 }
 
 # PascalCase → CONSTANT_CASE
 string::pascal_to_constant() {
-    string::camel_to_constant "$1"
+  string::camel_to_constant "$1"
 }
 
 # PascalCase → dot.case
 string::pascal_to_dot() {
-    string::camel_to_dot "$1"
+  string::camel_to_dot "$1"
 }
 
 # PascalCase → path/case
 string::pascal_to_path() {
-    string::camel_to_path "$1"
+  string::camel_to_path "$1"
 }
 
 # CONSTANT_CASE → plain
 string::constant_to_plain() {
-    local s="${1//_/ }"
-    echo "${s,,}"
+  local s="${1//_/ }"
+  echo "${s,,}"
 }
 
 # CONSTANT_CASE → snake_case
 string::constant_to_snake() {
-    echo "${1,,}"
+  echo "${1,,}"
 }
 
 # CONSTANT_CASE → kebab-case
 string::constant_to_kebab() {
-    local s="${1//_/-}"
-    echo "${s,,}"
+  local s="${1//_/-}"
+  echo "${s,,}"
 }
 
 # CONSTANT_CASE → camelCase
 string::constant_to_camel() {
-    string::snake_to_camel "${1,,}"
+  string::snake_to_camel "${1,,}"
 }
 
 # CONSTANT_CASE → PascalCase
 string::constant_to_pascal() {
-    string::snake_to_pascal "${1,,}"
+  string::snake_to_pascal "${1,,}"
 }
 
 # CONSTANT_CASE → dot.case
 string::constant_to_dot() {
-    local s="${1//_/.}"
-    echo "${s,,}"
+  local s="${1//_/.}"
+  echo "${s,,}"
 }
 
 # CONSTANT_CASE → path/case
 string::constant_to_path() {
-    local s="${1//_//}"
-    echo "${s,,}"
+  local s="${1//_//}"
+  echo "${s,,}"
 }
 
 # dot.case → plain
 string::dot_to_plain() {
-    echo "${1//./ }"
+  echo "${1//./ }"
 }
 
 # dot.case → snake_case
 string::dot_to_snake() {
-    echo "${1//./_}"
+  echo "${1//./_}"
 }
 
 # dot.case → kebab-case
 string::dot_to_kebab() {
-    echo "${1//./-}"
+  echo "${1//./-}"
 }
 
 # dot.case → camelCase
 string::dot_to_camel() {
-    string::plain_to_camel "${1//./ }"
+  string::plain_to_camel "${1//./ }"
 }
 
 # dot.case → PascalCase
 string::dot_to_pascal() {
-    string::plain_to_pascal "${1//./ }"
+  string::plain_to_pascal "${1//./ }"
 }
 
 # dot.case → CONSTANT_CASE
 string::dot_to_constant() {
-    local s="${1//./_}"
-    echo "${s^^}"
+  local s="${1//./_}"
+  echo "${s^^}"
 }
 
 # dot.case → path/case
 string::dot_to_path() {
-    echo "${1//.//}"
+  echo "${1//.//}"
 }
 
 # path/case → plain
 string::path_to_plain() {
-    echo "${1//\// }"
+  echo "${1//\// }"
 }
 
 # path/case → snake_case
 string::path_to_snake() {
-    echo "${1//\//_}"
+  echo "${1//\//_}"
 }
 
 # path/case → kebab-case
 string::path_to_kebab() {
-    echo "${1//\/-}"
+  echo "${1//\/-/}"
 }
 
 # path/case → camelCase
 string::path_to_camel() {
-    string::plain_to_camel "${1//\// }"
+  string::plain_to_camel "${1//\// }"
 }
 
 # path/case → PascalCase
 string::path_to_pascal() {
-    string::plain_to_pascal "${1//\// }"
+  string::plain_to_pascal "${1//\// }"
 }
 
 # path/case → CONSTANT_CASE
 string::path_to_constant() {
-    local s="${1//\//_}"
-    echo "${s^^}"
+  local s="${1//\//_}"
+  echo "${s^^}"
 }
 
 # path/case → dot.case
 string::path_to_dot() {
-    echo "${1//\//.}"
+  echo "${1//\//.}"
 }
 
 # ==============================================================================
@@ -478,34 +479,34 @@ string::path_to_dot() {
 
 # Trim leading whitespace
 string::trim_left() {
-    local s="$1"
-    s="${s#"${s%%[![:space:]]*}"}"
-    echo "$s"
+  local s="$1"
+  s="${s#"${s%%[![:space:]]*}"}"
+  echo "$s"
 }
 
 # Trim trailing whitespace
 string::trim_right() {
-    local s="$1"
-    s="${s%"${s##*[![:space:]]}"}"
-    echo "$s"
+  local s="$1"
+  s="${s%"${s##*[![:space:]]}"}"
+  echo "$s"
 }
 
 # Trim both leading and trailing whitespace
 string::trim() {
-    local s="$1"
-    s="${s#"${s%%[![:space:]]*}"}"
-    s="${s%"${s##*[![:space:]]}"}"
-    echo "$s"
+  local s="$1"
+  s="${s#"${s%%[![:space:]]*}"}"
+  s="${s%"${s##*[![:space:]]}"}"
+  echo "$s"
 }
 
 # Collapse multiple consecutive spaces into one
 string::collapse_spaces() {
-    echo "$1" | tr -s ' '
+  echo "$1" | tr -s ' '
 }
 
 # Remove all whitespace
 string::strip_spaces() {
-    echo "${1//[[:space:]]/}"
+  echo "${1//[[:space:]]/}"
 }
 
 # ==============================================================================
@@ -515,46 +516,46 @@ string::strip_spaces() {
 # Extract substring
 # Usage: string::substr str start [length]
 string::substr() {
-    local s="$1" start="$2" len="${3:-}"
-    if [[ -n "$len" ]]; then
-        echo "${s:$start:$len}"
-    else
-        echo "${s:$start}"
-    fi
+  local s="$1" start="$2" len="${3:-}"
+  if [[ -n "$len" ]]; then
+    echo "${s:$start:$len}"
+  else
+    echo "${s:$start}"
+  fi
 }
 
 # Index of first occurrence of substring (-1 if not found)
 # Usage: string::index_of haystack needle
 string::index_of() {
-    local haystack="$1" needle="$2"
-    local before="${haystack%%"$needle"*}"
-    if [[ "$before" == "$haystack" ]]; then
-        echo -1
-    else
-        echo "${#before}"
-    fi
+  local haystack="$1" needle="$2"
+  local before="${haystack%%"$needle"*}"
+  if [[ "$before" == "$haystack" ]]; then
+    echo -1
+  else
+    echo "${#before}"
+  fi
 }
 
 # Return everything before the first occurrence of delimiter
 # Usage: string::before str delimiter
 string::before() {
-    echo "${1%%"$2"*}"
+  echo "${1%%"$2"*}"
 }
 
 # Return everything after the first occurrence of delimiter
 # Usage: string::after str delimiter
 string::after() {
-    echo "${1#*"$2"}"
+  echo "${1#*"$2"}"
 }
 
 # Return everything before the last occurrence of delimiter
 string::before_last() {
-    echo "${1%"$2"*}"
+  echo "${1%"$2"*}"
 }
 
 # Return everything after the last occurrence of delimiter
 string::after_last() {
-    echo "${1##*"$2"}"
+  echo "${1##*"$2"}"
 }
 
 # ==============================================================================
@@ -564,88 +565,97 @@ string::after_last() {
 # Replace first occurrence of search with replace
 # Usage: string::replace str search replace
 string::replace() {
-    echo "${1/"$2"/"$3"}"
+  echo "${1/"$2"/"$3"}"
 }
 
 # Replace all occurrences of search with replace
 string::replace_all() {
-    echo "${1//"$2"/"$3"}"
+  echo "${1//"$2"/"$3"}"
 }
 
 # Remove all occurrences of a substring
 string::remove() {
-    echo "${1//"$2"/}"
+  echo "${1//"$2"/}"
 }
 
 # Remove first occurrence of a substring
 string::remove_first() {
-    echo "${1/"$2"/}"
+  echo "${1/"$2"/}"
 }
 
 # Reverse a string
 # Requires: rev (coreutils) — falls back to awk
 string::reverse() {
-    if runtime::has rev ; then
-        echo "$1" | rev
-    else
-        echo "$1" | awk '{for(i=length;i>0;i--) printf substr($0,i,1); print ""}'
-    fi
+  if runtime::has rev; then
+    echo "$1" | rev
+  else
+    echo "$1" | awk '{for(i=length;i>0;i--) printf substr($0,i,1); print ""}'
+  fi
 }
 
 # Repeat a string n times
 # Usage: string::repeat str n
 string::repeat() {
-    local str="$1" n="$2" result=""
-    for (( i=0; i<n; i++ )); do result+="$str"; done
-    echo "$result"
+  local str="$1" n="$2" result=""
+  for ((i = 0; i < n; i++)); do result+="$str"; done
+  echo "$result"
 }
 
 # Pad string on the left to a given width
 # Usage: string::pad_left str width [char]
 string::pad_left() {
-    local s="$1" width="$2" char="${3:- }"
-    local len="${#s}"
-    if (( len >= width )); then echo "$s"; return; fi
-    local pad
-    pad=$(string::repeat "$char" $(( width - len )))
-    echo "${pad}${s}"
+  local s="$1" width="$2" char="${3:- }"
+  local len="${#s}"
+  if ((len >= width)); then
+    echo "$s"
+    return
+  fi
+  local pad
+  pad=$(string::repeat "$char" $((width - len)))
+  echo "${pad}${s}"
 }
 
 # Pad string on the right to a given width
 # Usage: string::pad_right str width [char]
 string::pad_right() {
-    local s="$1" width="$2" char="${3:- }"
-    local len="${#s}"
-    if (( len >= width )); then echo "$s"; return; fi
-    local pad
-    pad=$(string::repeat "$char" $(( width - len )))
-    echo "${s}${pad}"
+  local s="$1" width="$2" char="${3:- }"
+  local len="${#s}"
+  if ((len >= width)); then
+    echo "$s"
+    return
+  fi
+  local pad
+  pad=$(string::repeat "$char" $((width - len)))
+  echo "${s}${pad}"
 }
 
 # Centre a string within a given width
 # Usage: string::pad_center str width [char]
 string::pad_center() {
-    local s="$1" width="$2" char="${3:- }"
-    local len="${#s}"
-    if (( len >= width )); then echo "$s"; return; fi
-    local total=$(( width - len ))
-    local left=$(( total / 2 ))
-    local right=$(( total - left ))
-    local lpad rpad
-    lpad=$(string::repeat "$char" $left)
-    rpad=$(string::repeat "$char" $right)
-    echo "${lpad}${s}${rpad}"
+  local s="$1" width="$2" char="${3:- }"
+  local len="${#s}"
+  if ((len >= width)); then
+    echo "$s"
+    return
+  fi
+  local total=$((width - len))
+  local left=$((total / 2))
+  local right=$((total - left))
+  local lpad rpad
+  lpad=$(string::repeat "$char" $left)
+  rpad=$(string::repeat "$char" $right)
+  echo "${lpad}${s}${rpad}"
 }
 
 # Truncate a string to max length, appending suffix if truncated
 # Usage: string::truncate str max [suffix]
 string::truncate() {
-    local s="$1" max="$2" suffix="${3:-...}"
-    if (( ${#s} <= max )); then
-        echo "$s"
-    else
-        echo "${s:0:$(( max - ${#suffix} ))}${suffix}"
-    fi
+  local s="$1" max="$2" suffix="${3:-...}"
+  if ((${#s} <= max)); then
+    echo "$s"
+  else
+    echo "${s:0:$((max - ${#suffix}))}${suffix}"
+  fi
 }
 
 # ==============================================================================
@@ -655,27 +665,28 @@ string::truncate() {
 # Split a string by delimiter into lines (one element per line)
 # Usage: string::split str delimiter
 string::split() {
-    local s="$1" delim="$2"
-    local IFS="$delim"
-    local -a parts=("$s")
-    printf '%s\n' "${parts[@]}"
+  local s="$1" delim="$2"
+  local IFS="$delim"
+  local -a parts=("$s")
+  printf '%s\n' "${parts[@]}"
 }
 
 # Join an array of arguments with a delimiter
 # Usage: string::join delimiter arg1 arg2 ...
 string::join() {
-    local delim="$1"; shift
-    local result=""
-    local first=true
-    for part in "$@"; do
-        if $first; then
-            result="$part"
-            first=false
-        else
-            result+="${delim}${part}"
-        fi
-    done
-    echo "$result"
+  local delim="$1"
+  shift
+  local result=""
+  local first=true
+  for part in "$@"; do
+    if $first; then
+      result="$part"
+      first=false
+    else
+      result+="${delim}${part}"
+    fi
+  done
+  echo "$result"
 }
 
 # ==============================================================================
@@ -685,62 +696,62 @@ string::join() {
 # URL-encode a string
 # Requires: python3 or perl
 string::url_encode() {
-    if runtime::has python3 ; then
-        python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))" "$1"
-    elif runtime::has perl ; then
-        perl -MURI::Escape -e "print uri_escape(\$ARGV[0])" "$1"
-    else
-        echo "string::url_encode: requires python3 or perl" >&2
-        return 1
-    fi
+  if runtime::has python3; then
+    python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))" "$1"
+  elif runtime::has perl; then
+    perl -MURI::Escape -e "print uri_escape(\$ARGV[0])" "$1"
+  else
+    echo "string::url_encode: requires python3 or perl" >&2
+    return 1
+  fi
 }
 
 # URL-decode a string
 string::url_decode() {
-    if runtime::has ; then
-        python3 -c "import urllib.parse,sys; print(urllib.parse.unquote(sys.argv[1]))" "$1"
-    elif runtime::has perl ; then
-        perl -MURI::Escape -e "print uri_unescape(\$ARGV[0])" "$1"
-    else
-        echo "string::url_decode: requires python3 or perl" >&2
-        return 1
-    fi
+  if runtime::has python3; then
+    python3 -c "import urllib.parse,sys; print(urllib.parse.unquote(sys.argv[1]))" "$1"
+  elif runtime::has perl; then
+    perl -MURI::Escape -e "print uri_unescape(\$ARGV[0])" "$1"
+  else
+    echo "string::url_decode: requires python3 or perl" >&2
+    return 1
+  fi
 }
 
 # Base64 encode
 string::base64_encode() {
-    echo -n "$1" | base64
+  echo -n "$1" | base64
 }
 
 # Base64 decode
 string::base64_decode() {
-    echo -n "$1" | base64 --decode
+  echo -n "$1" | base64 --decode
 }
 
 # MD5 hash of a string
 # Requires: md5sum (Linux) or md5 (macOS)
 string::md5() {
-    if command -v md5sum >/dev/null 2>&1; then
-        echo -n "$1" | md5sum | cut -d' ' -f1
-    elif command -v md5 >/dev/null 2>&1; then
-        echo -n "$1" | md5
-    else
-        echo "string::md5: requires md5sum or md5" >&2
-        return 1
-    fi
+  if command -v md5sum >/dev/null 2>&1; then
+    echo -n "$1" | md5sum | cut -d' ' -f1
+  elif command -v md5 >/dev/null 2>&1; then
+    echo -n "$1" | md5
+  else
+    echo "string::md5: requires md5sum or md5" >&2
+    return 1
+  fi
 }
 
 # SHA256 hash of a string
 # Requires: sha256sum (Linux) or shasum (macOS)
 string::sha256() {
-    if command -v sha256sum >/dev/null 2>&1; then
-        echo -n "$1" | sha256sum | cut -d' ' -f1
-    elif command -v shasum >/dev/null 2>&1; then
-        echo -n "$1" | shasum -a 256 | cut -d' ' -f1
-    else
-        echo "string::sha256: requires sha256sum or shasum" >&2
-        return 1
-    fi
+  if command -v sha256sum >/dev/null 2>&1; then
+    echo -n "$1" | sha256sum | cut -d' ' -f1
+  elif command -v shasum >/dev/null 2>&1; then
+    echo -n "$1" | shasum -a 256 | cut -d' ' -f1
+  else
+    echo "string::sha256: requires sha256sum or shasum" >&2
+    return 1
+  fi
 }
 
 # ==============================================================================
@@ -750,26 +761,26 @@ string::sha256() {
 # Generate a random alphanumeric string of given length
 # Usage: string::random [length]
 string::random() {
-    local len="${1:-16}"
-    cat /dev/urandom 2>/dev/null \
-        | tr -dc 'a-zA-Z0-9' \
-        | head -c "$len" \
-        || echo "string::random: /dev/urandom unavailable" >&2
+  local len="${1:-16}"
+  cat /dev/urandom 2>/dev/null |
+    tr -dc 'a-zA-Z0-9' |
+    head -c "$len" ||
+    echo "string::random: /dev/urandom unavailable" >&2
 }
 
 # Generate a UUID v4 (random)
 string::uuid() {
-    if command -v uuidgen >/dev/null 2>&1; then
-        uuidgen | tr '[:upper:]' '[:lower:]'
-    elif [[ -f /proc/sys/kernel/random/uuid ]]; then
-        cat /proc/sys/kernel/random/uuid
-    else
-        # Manual construction from /dev/urandom
-        local b
-        b=$(od -An -N16 -tx1 /dev/urandom | tr -d ' \n')
-        printf '%s-%s-4%s-%s%s-%s\n' \
-            "${b:0:8}" "${b:8:4}" "${b:13:3}" \
-            "$(( (16#${b:16:1} & 3) | 8 ))${b:17:3}" \
-            "${b:20:4}" "${b:24:12}"
-    fi
+  if command -v uuidgen >/dev/null 2>&1; then
+    uuidgen | tr '[:upper:]' '[:lower:]'
+  elif [[ -f /proc/sys/kernel/random/uuid ]]; then
+    cat /proc/sys/kernel/random/uuid
+  else
+    # Manual construction from /dev/urandom
+    local b
+    b=$(od -An -N16 -tx1 /dev/urandom | tr -d ' \n')
+    printf '%s-%s-4%s-%s%s-%s\n' \
+      "${b:0:8}" "${b:8:4}" "${b:13:3}" \
+      "$(((16#${b:16:1} & 3) | 8))${b:17:3}" \
+      "${b:20:4}" "${b:24:12}"
+  fi
 }
