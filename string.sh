@@ -703,12 +703,18 @@ string::url_decode() {
 
 # Base64 encode
 string::base64_encode() {
-    echo -n "$1" | base64
+    case "$(runtime::os)" in
+    darwin) echo -n "$1" | base64 ;;
+    *)      echo -n "$1" | base64 -w 0 ;;
+    esac
 }
 
 # Base64 decode
 string::base64_decode() {
-    echo -n "$1" | base64 --decode
+    case "$(runtime::os)" in
+    darwin) echo -n "$1" | base64 -D ;;
+    *)      echo -n "$1" | base64 --decode ;;
+    esac
 }
 
 # MD5 hash of a string
