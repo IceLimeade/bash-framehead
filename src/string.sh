@@ -586,7 +586,7 @@ string::remove_first() {
 # Reverse a string
 # Requires: rev (coreutils) — falls back to awk
 string::reverse() {
-  if runtime::has rev; then
+  if runtime::has_command rev; then
     echo "$1" | rev
   else
     echo "$1" | awk '{for(i=length;i>0;i--) printf substr($0,i,1); print ""}'
