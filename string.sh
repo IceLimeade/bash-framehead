@@ -760,6 +760,79 @@ string::base64_decode::pure() {
     echo
 }
 
+string::base32_encode() {
+    if runtime::has_command base32; then
+        echo -n "$1" | base32
+    elif runtime::has_command gbase32; then  # homebrew coreutils on macOS
+        echo -n "$1" | gbase32
+    else
+        echo "string::base32_encode: requires base32 (GNU coreutils)" >&2
+        return 1
+    fi
+}
+
+string::base32_decode() {
+    if runtime::has_command base32; then
+        echo -n "$1" | base32 --decode
+    elif runtime::has_command gbase32; then
+        echo -n "$1" | gbase32 --decode
+    else
+        echo "string::base32_decode: requires base32 (GNU coreutils)" >&2
+        return 1
+    fi
+}
+
+string::base32_encode::pure() {
+    local _B32="ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
+    local s="$1" out="" i a b c d e
+
+    for (( i=0; i<${#s}; i+=5 )); do
+        a=$(printf '%d' "'${s:$i:1}")
+        b=$(( i+1 < ${#s} ? $(printf '%d' "'${s:$((i+1)):1}") : 0 ))
+        c=$(( i+2 < ${#s} ? $(printf '%d' "'${s:$((i+2)):1}") : 0 ))
+        d=$(( i+3 < ${#s} ? $(printf '%d' "'${s:$((i+3)):1}") : 0 ))
+        e=$(( i+4 < ${#s} ? $(printf '%d' "'${s:$((i+4)):1}") : 0 ))
+
+        out+="${_B32:$(( (a >> 3) & 31 )):1}"
+        out+="${_B32:$(( ((a << 2) | (b >> 6)) & 31 )):1}"
+        out+="${_B32:$(( i+1 < ${#s} ? (b >> 1) & 31 : 32 )):1}"
+        out+="${_B32:$(( i+1 < ${#s} ? ((b << 4) | (c >> 4)) & 31 : 32 )):1}"
+        out+="${_B32:$(( i+2 < ${#s} ? ((c << 1) | (d >> 7)) & 31 : 32 )):1}"
+        out+="${_B32:$(( i+3 < ${#s} ? (d >> 2) & 31 : 32 )):1}"
+        out+="${_B32:$(( i+3 < ${#s} ? ((d << 3) | (e >> 5)) & 31 : 32 )):1}"
+        out+="${_B32:$(( i+4 < ${#s} ? e & 31 : 32 )):1}"
+    done
+
+    echo "$out"
+}
+
+string::base32_decode::pure() {
+    local _B32="ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
+    local s="${1//=}" out="" i
+    local -i a b c d e f g h
+
+    # uppercase input since base32 alphabet is uppercase only
+    s="${s^^}"
+
+    for (( i=0; i<${#s}; i+=8 )); do
+        a="${_B32%${s:$i:1}*}"         ; a="${#a}"
+        b="${_B32%${s:$((i+1)):1}*}"   ; b="${#b}"
+        c="${_B32%${s:$((i+2)):1}*}"   ; c="${#c}"
+        d="${_B32%${s:$((i+3)):1}*}"   ; d="${#d}"
+        e="${_B32%${s:$((i+4)):1}*}"   ; e="${#e}"
+        f="${_B32%${s:$((i+5)):1}*}"   ; f="${#f}"
+        g="${_B32%${s:$((i+6)):1}*}"   ; g="${#g}"
+        h="${_B32%${s:$((i+7)):1}*}"   ; h="${#h}"
+
+        printf "\\$(printf '%03o' $(( (a << 3) | (b >> 2) )))"
+        (( i+2 < ${#s} )) && printf "\\$(printf '%03o' $(( ((b & 3) << 6) | (c << 1) | (d >> 4) )))"
+        (( i+4 < ${#s} )) && printf "\\$(printf '%03o' $(( ((d & 15) << 4) | (e >> 1) )))"
+        (( i+5 < ${#s} )) && printf "\\$(printf '%03o' $(( ((e & 1) << 7) | (f << 2) | (g >> 3) )))"
+        (( i+7 < ${#s} )) && printf "\\$(printf '%03o' $(( ((g & 7) << 5) | h )))"
+    done
+    echo
+}
+
 # MD5 hash of a string
 # Requires: md5sum (Linux) or md5 (macOS)
 string::md5() {
