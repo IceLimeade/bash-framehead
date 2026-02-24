@@ -683,28 +683,22 @@ string::join() {
 # ==============================================================================
 
 # URL-encode a string
-# Requires: python3 or perl
 string::url_encode() {
-    if runtime::has python3 ; then
-        python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))" "$1"
-    elif runtime::has perl ; then
-        perl -MURI::Escape -e "print uri_escape(\$ARGV[0])" "$1"
-    else
-        echo "string::url_encode: requires python3 or perl" >&2
-        return 1
-    fi
+    local s="$1" encoded="" i char hex
+    for (( i=0; i<${#s}; i++ )); do
+        char="${s:$i:1}"
+        case "$char" in
+            [a-zA-Z0-9.~_-]) encoded+="$char" ;;
+            *) printf -v hex '%02X' "'$char"
+               encoded+="%$hex" ;;
+        esac
+    done
+    echo "$encoded"
 }
 
-# URL-decode a string
 string::url_decode() {
-    if runtime::has ; then
-        python3 -c "import urllib.parse,sys; print(urllib.parse.unquote(sys.argv[1]))" "$1"
-    elif runtime::has perl ; then
-        perl -MURI::Escape -e "print uri_unescape(\$ARGV[0])" "$1"
-    else
-        echo "string::url_decode: requires python3 or perl" >&2
-        return 1
-    fi
+    local s="${1//+/ }"  # replace + with space first
+    printf '%b\n' "${s//%/\\x}"
 }
 
 # Base64 encode
