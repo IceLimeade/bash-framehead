@@ -188,6 +188,28 @@ terminal::screen::normal() {
     printf '\033[?1049l'
 }
 
+# Enter alternate screen, run a command, return to normal screen
+# Usage: terminal::screen::wrap command [args...]
+terminal::screen::wrap() {
+    terminal::screen::alternate
+    "$@"
+    local ret=$?
+    terminal::screen::normal
+    return $ret
+}
+
+terminal::screen::alternate_enter() {
+    terminal::screen::alternate
+    terminal::cursor::home
+    terminal::clear
+    trap 'terminal::screen::normal' EXIT INT TERM
+}
+
+terminal::screen::alternate_exit() {
+    terminal::screen::normal
+    trap - EXIT INT TERM
+}
+
 # Scroll up n lines
 terminal::scroll::up() {
     printf '\033[%sS' "${1:-1}"
@@ -333,23 +355,23 @@ terminal::shopt::load() {
 }
 
 # Common shopt convenience toggles
-terminal::shopt::globstar::enable()    { shopt -s globstar    2>/dev/null; }  # ** recursive glob
-terminal::shopt::globstar::disable()   { shopt -u globstar    2>/dev/null; }
-terminal::shopt::nullglob::enable()    { shopt -s nullglob    2>/dev/null; }  # failed globs → empty
-terminal::shopt::nullglob::disable()   { shopt -u nullglob    2>/dev/null; }
-terminal::shopt::dotglob::enable()     { shopt -s dotglob     2>/dev/null; }  # globs match dotfiles
-terminal::shopt::dotglob::disable()    { shopt -u dotglob     2>/dev/null; }
-terminal::shopt::extglob::enable()     { shopt -s extglob     2>/dev/null; }  # extended patterns
-terminal::shopt::extglob::disable()    { shopt -u extglob     2>/dev/null; }
-terminal::shopt::nocaseglob::enable()  { shopt -s nocaseglob  2>/dev/null; }  # case-insensitive glob
-terminal::shopt::nocaseglob::disable() { shopt -u nocaseglob  2>/dev/null; }
-terminal::shopt::autocd::enable()      { shopt -s autocd      2>/dev/null; }  # cd by typing dir name
-terminal::shopt::autocd::disable()     { shopt -u autocd      2>/dev/null; }
-terminal::shopt::checkwinsize::enable()  { shopt -s checkwinsize 2>/dev/null; } # update LINES/COLUMNS
+terminal::shopt::globstar::enable()      { shopt -s globstar     2>/dev/null; }  # ** recursive glob
+terminal::shopt::globstar::disable()     { shopt -u globstar     2>/dev/null; }
+terminal::shopt::nullglob::enable()      { shopt -s nullglob     2>/dev/null; }  # failed globs → empty
+terminal::shopt::nullglob::disable()     { shopt -u nullglob     2>/dev/null; }
+terminal::shopt::dotglob::enable()       { shopt -s dotglob      2>/dev/null; }  # globs match dotfiles
+terminal::shopt::dotglob::disable()      { shopt -u dotglob      2>/dev/null; }
+terminal::shopt::extglob::enable()       { shopt -s extglob      2>/dev/null; }  # extended patterns
+terminal::shopt::extglob::disable()      { shopt -u extglob      2>/dev/null; }
+terminal::shopt::nocaseglob::enable()    { shopt -s nocaseglob   2>/dev/null; }  # case-insensitive glob
+terminal::shopt::nocaseglob::disable()   { shopt -u nocaseglob   2>/dev/null; }
+terminal::shopt::autocd::enable()        { shopt -s autocd       2>/dev/null; }  # cd by typing dir name
+terminal::shopt::autocd::disable()       { shopt -u autocd       2>/dev/null; }
+terminal::shopt::checkwinsize::enable()  { shopt -s checkwinsize 2>/dev/null; }  # update LINES/COLUMNS
 terminal::shopt::checkwinsize::disable() { shopt -u checkwinsize 2>/dev/null; }
-terminal::shopt::histappend::enable()  { shopt -s histappend  2>/dev/null; }  # append to history
-terminal::shopt::histappend::disable() { shopt -u histappend  2>/dev/null; }
-terminal::shopt::cdspell::enable()     { shopt -s cdspell     2>/dev/null; }  # autocorrect cd typos
-terminal::shopt::cdspell::disable()    { shopt -u cdspell     2>/dev/null; }
-terminal::shopt::nocasematch::enable()  { shopt -s nocasematch 2>/dev/null; } # case-insensitive [[ =~
-terminal::shopt::nocasematch::disable() { shopt -u nocasematch 2>/dev/null; }
+terminal::shopt::histappend::enable()    { shopt -s histappend   2>/dev/null; }  # append to history
+terminal::shopt::histappend::disable()   { shopt -u histappend   2>/dev/null; }
+terminal::shopt::cdspell::enable()       { shopt -s cdspell      2>/dev/null; }  # autocorrect cd typos
+terminal::shopt::cdspell::disable()      { shopt -u cdspell      2>/dev/null; }
+terminal::shopt::nocasematch::enable()   { shopt -s nocasematch  2>/dev/null; }  # case-insensitive [[ =~
+terminal::shopt::nocasematch::disable()  { shopt -u nocasematch  2>/dev/null; }
