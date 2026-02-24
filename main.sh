@@ -2,81 +2,98 @@
 
 compile_files() {
     local output_file="${1:-compiled.sh}"
-    local i=0
+    local src_dir
+    src_dir="$(dirname "${BASH_SOURCE[0]}")/src"
 
-    # Create AND overwrite file
+    # Validate src directory exists
+    if [[ ! -d "$src_dir" ]]; then
+        echo "Error: src directory not found: $src_dir" >&2
+        return 1
+    fi
+
+    # Collect .sh files upfront so we can validate before touching output
+    local -a files=()
+    for f in "$src_dir"/*.sh; do
+        [[ -f "$f" ]] && files+=("$f")
+    done
+
+    if (( ${#files[@]} == 0 )); then
+        echo "Error: No .sh files found in $src_dir" >&2
+        return 1
+    fi
+
+    # Truncate/create output only after we know there's something to write
     true > "$output_file"
 
+    local i=0
     local total_err=0 total_warn=0 total_info=0
-    for func_file in $(dirname "${BASH_SOURCE[0]}")/src/*.sh; do
-        [[ ! -f "$func_file" ]] && continue
+    local has_shellcheck=false
+    command -v shellcheck >/dev/null 2>&1 && has_shellcheck=true
+
+    for func_file in "${files[@]}"; do
+        local fname
+        fname="$(basename "$func_file")"
 
         if [[ ! -s "$func_file" ]]; then
-            echo "Warning: Skipping empty file: $(basename "$func_file")" >&2
+            echo "Warning: Skipping empty file: $fname" >&2
             continue
         fi
 
-        local err_file=0 warn_file=0 info_file=0
-        local issue_str_file=""
+        # Run shellcheck once, parse counts from output
+        local err_file=0 warn_file=0 info_file=0 issue_str_file=""
+        if $has_shellcheck; then
+            local sc_out
+            sc_out=$(shellcheck --format=gcc "$func_file" 2>/dev/null)
+            err_file=$(echo "$sc_out"  | grep -c ': error:')
+            warn_file=$(echo "$sc_out" | grep -c ': warning:')
+            info_file=$(echo "$sc_out" | grep -c ': note:')
 
-        if command -v shellcheck > /dev/null 2>&1; then
-            # Count errors (severity=error)
-            err_file=$(shellcheck --format=gcc --severity=error "$func_file" 2>/dev/null | wc -l)
+            # Also show human-readable output
+            shellcheck --color=auto --format=tty "$func_file" 2>/dev/null || true
+            echo
 
-            # Count warnings (severity=warning)
-            warn_file=$(shellcheck --format=gcc --severity=warning "$func_file" 2>/dev/null | wc -l)
-
-            # Count info/style issues (severity=info, style)
-            info_file=$(shellcheck --format=gcc --severity=info "$func_file" 2>/dev/null | wc -l)
-            # Add style if you want it separate
-            # style_file=$(shellcheck --format=gcc --severity=style "$func_file" 2>/dev/null | wc -l)
-            # info_file=$((info_file + style_file))
-
-            # Optional: Show shellcheck output
-            shellcheck --color=auto --format=tty --wiki=0 "$func_file"
+            local file_issues=$(( err_file + warn_file + info_file ))
+            if (( file_issues > 0 )); then
+                issue_str_file=" — $file_issues issues ($err_file errors, $warn_file warnings, $info_file info)"
+                (( total_err  += err_file  ))
+                (( total_warn += warn_file ))
+                (( total_info += info_file ))
+            fi
         fi
 
-        # Build per-file issue string
-        local total_file_issues=$((err_file + warn_file + info_file))
-        if (( total_file_issues > 0 )); then
-            issue_str_file="with $total_file_issues issues ($err_file errors, $warn_file warnings, $info_file info)"
-            (( total_err += err_file ))
-            (( total_warn += warn_file ))
-            (( total_info += info_file ))
-        fi
+        echo -n "Writing $fname..."
 
         local i_line=0
-        echo -n "Writing from $(basename "$func_file")..."
-
         while IFS= read -r line; do
-            # Strip shebang for non-first file
+            # Strip shebang from all but the first file
             if (( i > 0 && i_line == 0 )); then
+                (( i_line++ ))
                 [[ "$line" =~ ^#! ]] && continue
             fi
-            printf "%s\n" "$line" >> "$output_file"
+            printf '%s\n' "$line" >> "$output_file"
             (( i_line++ ))
         done < "$func_file"
 
-        echo " ok ${issue_str_file}"
+        echo " ok${issue_str_file}"
         (( i++ ))
     done
 
+    # Nothing was actually written (all files were empty)
     if (( i == 0 )); then
-        echo "Warning: No .sh files found in $src_dir" >&2
+        echo "Error: All source files were empty, output not written" >&2
         rm -f "$output_file"
         return 1
     fi
 
     chmod +x "$output_file" 2>/dev/null
 
-    # Build final issue string
-    local total_issues=$((total_err + total_warn + total_info))
+    local total_issues=$(( total_err + total_warn + total_info ))
     local final_issue_str=""
     if (( total_issues > 0 )); then
-        final_issue_str="with total $total_issues issues ($total_err errors, $total_warn warnings, $total_info info)"
+        final_issue_str=" — $total_issues total issues ($total_err errors, $total_warn warnings, $total_info info)"
     fi
 
-    echo "Successfully compiled $i files to $output_file ${final_issue_str}"
+    echo "Compiled $i file(s) to $output_file${final_issue_str}"
 }
 
 
@@ -85,12 +102,18 @@ if [[ ${1,,} == "compile" ]]; then
     exit 0
 fi
 
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    # Being executed, not sourced — tell user to source it
+    echo "Usage: source ${0}" >&2
+    exit 1
+fi
 
 # source all function files
-for func_file in "$(dirname "${BASH_SOURCE[0]}")/src/"*.sh; do
+src_dir="$(dirname "${BASH_SOURCE[0]}")/src"
+for func_file in "$src_dir"/*.sh; do
     if [[ -f "$func_file" ]]; then
         echo -n "Sourcing $func_file..."
         bash -n "$func_file" || { echo "Failed Bash dry check." && return 1; }
-        . "$func_file" && echo "ok"
+        source "$func_file" && echo "ok"
     fi
 done
