@@ -317,6 +317,29 @@ net::interface::stat() {
     return 1
 }
 
+net::interface::stat::rx() {
+    local iface="${1:-eth0}"
+    local rx
+    if [[ -f "/sys/class/net/$iface/statistics/rx_bytes" ]]; then
+        rx=$(cat "/sys/class/net/$iface/statistics/rx_bytes")
+        echo "$rx bytes"
+        return
+    fi
+    return 1
+}
+
+net::interface::stat::tx() {
+    local iface="${1:-eth0}"
+    local tx
+    if [[ -f "/sys/class/net/$iface/statistics/tx_bytes" ]]; then
+        tx=$(cat "/sys/class/net/$iface/statistics/tx_bytes")
+        echo "$tx bytes"
+        return
+    fi
+    return 1
+}
+
+
 # ==============================================================================
 # FETCH / DOWNLOAD
 # ==============================================================================
