@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
-# wiki-gen.sh — generate wiki docs from bash-framehead compiled output
+# gen_wiki.sh — generate wiki docs from bash-framehead compiled output
 # Dogfoods the framework for string manipulation, fs operations, and path handling
 #
-# Usage: ./wiki-gen.sh <framework_file> [wiki_dir]
-# Example: ./wiki-gen.sh ./bash-framehead.sh ./wiki
+# Usage: ./gen_wiki.sh <framework_file> [wiki_dir]
+# Example: ./gen_wiki.sh ./bash-framehead.sh ./wiki
+#
+# Behaviour:
+#   - Function pages: skipped if already exist (preserves manual edits)
+#   - Module indexes: new entries appended, existing entries preserved
+#   - Root index: new module rows appended, existing rows preserved
+
 
 SRC="${1:?Usage: gen_wiki.sh <framework_file> [wiki_dir]}"
 WIKI="${2:-./wiki}"
@@ -18,27 +24,25 @@ source "$SRC"
 # INTROSPECTION HELPERS (using the framework)
 # ==============================================================================
 
-# Get all public function names from the loaded framework
 _wiki::all_functions() {
     declare -F | awk '{print $3}' | grep -v '^_' | grep '::' | sort
 }
 
-# Get module name from function: string::substr -> string
 _wiki::module_of() {
     string::before "$1" "::"
 }
 
-# Get leaf name from function: string::substr -> substr
 _wiki::leaf_of() {
     string::after "$1" "::"
 }
 
-# Convert :: to / for filesystem path: sort::reverse -> sort/reverse
 _wiki::to_path() {
     string::replace_all "$1" "::" "/"
 }
 
-# Extract comment block above a function definition in the source file
+# Extract comment block above a function definition
+# Stops at blank lines (with no comment on the other side),
+# non-comment lines, and divider lines (# ===...)
 _wiki::extract_comments() {
     local funcname="$1"
     local lineno
@@ -51,8 +55,17 @@ _wiki::extract_comments() {
     while (( i >= 1 )); do
         local line
         line=$(sed -n "${i}p" "$SRC")
+
+        # Stop at divider lines: # ===... or # ---...
+        if [[ "$line" =~ ^#[[:space:]]*[=\-]{4,}[[:space:]]*$ ]]; then
+            break
+        fi
+
         if [[ "$line" =~ ^#[[:space:]]?(.*) ]]; then
-            lines=("${BASH_REMATCH[1]}" "${lines[@]}")
+            local content="${BASH_REMATCH[1]}"
+            # Skip if content is itself just dashes/equals (belt and braces)
+            [[ "$content" =~ ^[=\-]{4,}$ ]] && break
+            lines=("$content" "${lines[@]}")
             (( i-- ))
         elif [[ -z "$line" ]]; then
             local prev
@@ -105,6 +118,11 @@ _wiki::write_function_page() {
 
     fs::mkdir "$out_dir"
 
+    # Skip if already exists — preserve manual edits
+    if [[ -f "$out_file" ]]; then
+        return
+    fi
+
     local comments usage description example
     comments=$(_wiki::extract_comments "$funcname")
     usage=$(grep -i    '^Usage:'   <<< "$comments" | string::after_last "Usage: " || true)
@@ -147,43 +165,59 @@ _wiki::write_module_index() {
     local -a funcs=("$@")
     local index_file="${WIKI}/${module}.md"
 
-    {
-        echo "# \`${module}\`"
-        echo ""
-        echo "| Function | Description |"
-        echo "|----------|-------------|"
+    # Create with header if it doesn't exist yet
+    if [[ ! -f "$index_file" ]]; then
+        {
+            echo "# \`${module}\`"
+            echo ""
+            echo "| Function | Description |"
+            echo "|----------|-------------|"
+        } > "$index_file"
+    fi
 
-        local fn comments desc leaf leaf_path
-        for fn in "${funcs[@]}"; do
-            leaf=$(_wiki::leaf_of "$fn")
-            leaf_path=$(_wiki::to_path "$leaf")
-            comments=$(_wiki::extract_comments "$fn")
-            desc=$(grep -iv '^Usage:\|^Example:' <<< "$comments" | grep -v '^$' | head -1 || true)
-            echo "| [\`${fn}\`](./${module}/${leaf_path}.md) | ${desc:-—} |"
-        done
+    local existing
+    existing=$(cat "$index_file")
 
-    } > "$index_file"
+    local fn comments desc leaf leaf_path
+    for fn in "${funcs[@]}"; do
+        # Skip if this function already has an entry
+        string::contains "$existing" "\`${fn}\`" && continue
+
+        leaf=$(_wiki::leaf_of "$fn")
+        leaf_path=$(_wiki::to_path "$leaf")
+        comments=$(_wiki::extract_comments "$fn")
+        desc=$(grep -iv '^Usage:\|^Example:' <<< "$comments" | grep -v '^$' | head -1 || true)
+        echo "| [\`${fn}\`](./${module}/${leaf_path}.md) | ${desc:-—} |" >> "$index_file"
+    done
 }
 
 _wiki::write_root_index() {
     local -a modules=("$@")
     local index_file="${WIKI}/README.md"
 
-    {
-        echo "# bash-framehead"
-        echo ""
-        echo "## Modules"
-        echo ""
-        echo "| Module | Functions |"
-        echo "|--------|-----------|"
+    # Create with header if it doesn't exist yet
+    if [[ ! -f "$index_file" ]]; then
+        {
+            echo "# bash-framehead"
+            echo ""
+            echo "## Modules"
+            echo ""
+            echo "| Module | Functions |"
+            echo "|--------|-----------|"
+        } > "$index_file"
+    fi
 
-        local m count
-        for m in $(printf '%s\n' "${modules[@]}" | sort -u); do
-            count=$(grep -c '^| `' "${WIKI}/${m}.md" 2>/dev/null || echo 0)
-            echo "| [\`${m}\`](./${m}.md) | ${count} |"
-        done
+    local existing
+    existing=$(cat "$index_file")
 
-    } > "$index_file"
+    local m count
+    for m in $(printf '%s\n' "${modules[@]}" | sort -u); do
+        # Skip if module already has an entry
+        string::contains "$existing" "\`${m}\`" && continue
+
+        count=$(grep -c '^| `' "${WIKI}/${m}.md" 2>/dev/null || echo 0)
+        echo "| [\`${m}\`](./${m}.md) | ${count} |" >> "$index_file"
+    done
 }
 
 # ==============================================================================
@@ -218,11 +252,21 @@ echo "Found $total functions across $module_count modules"
 echo ""
 
 # Generate function pages
-local_count=0
+created=0
+skipped=0
 for fn in "${all_funcs[@]}"; do
-    _wiki::write_function_page "$fn"
-    (( local_count++ ))
-    printf '\r  %d / %d' "$local_count" "$total"
+    module=$(_wiki::module_of "$fn")
+    leaf=$(_wiki::leaf_of "$fn")
+    leaf_path=$(_wiki::to_path "$leaf")
+    out_file="${WIKI}/${module}/${leaf_path}.md"
+
+    if [[ -f "$out_file" ]]; then
+        (( skipped++ ))
+    else
+        _wiki::write_function_page "$fn"
+        (( created++ ))
+    fi
+    printf '\r  %d created, %d skipped / %d total' "$created" "$skipped" "$total"
 done
 echo ""
 
@@ -232,7 +276,7 @@ echo "Generating module indexes..."
 for module in "${!module_funcs[@]}"; do
     read -ra funcs <<< "${module_funcs[$module]}"
     _wiki::write_module_index "$module" "${funcs[@]}"
-    echo "  ${module}.md (${#funcs[@]} functions)"
+    echo "  ${module}.md"
 done
 
 # Generate root index
@@ -241,4 +285,4 @@ echo "Generating root index..."
 _wiki::write_root_index "${!module_funcs[@]}"
 
 echo ""
-echo "Done — ${total} pages in ${WIKI}/"
+echo "Done — ${created} created, ${skipped} skipped, ${WIKI}/README.md updated"
