@@ -99,7 +99,7 @@ compile_files() {
 statistics() {
     local file=$1
     echo "=== bash::framehead.sh Diagnostics ==="
-    echo "File size: $(wc -l < $file) lines"
+    echo "File size: $(wc -l < $file) lines // $(numfmt --to=iec-i --suffix=B $(stat -c '%s' "$1" 2>/dev/null || wc -c < "$1" 2>/dev/null))"
     echo "First 5 lines:"
     head -5 $file
     echo "..."
