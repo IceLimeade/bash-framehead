@@ -1,4 +1,4 @@
-# bash::framework
+# bash::framehead
 
 A framework for Bash — a runtime standard library with a comprehensive (and frankly ridiculous) set of helpers. String manipulation, math, filesystem, networking, git, hardware, colour, terminal, time, process management, and more — all compiled into a single sourceable file.
 No dependencies beyond what's already on your system. No installation. Just source it and go.
@@ -18,7 +18,7 @@ timedate::duration::format 3661  # 1h 1m 1s
 
 Bash is everywhere. But writing robust scripts in Bash usually means reinventing the same wheels — trimming strings, checking if a port is open, formatting durations, hashing a value, reading a file line by line. Every project ends up with its own grab-bag of utility functions, copy-pasted from Stack Overflow and subtly different each time.
 
-`bash::framework` is that grab-bag, done once and done properly. It follows a few guiding principles:
+`bash::framehead` is that grab-bag, done once and done properly. It follows a few guiding principles:
 
 - **Single file.** Source one file, get everything. No `PATH` gymnastics, no install scripts, no package managers.
 - **Modular by design.** Don't need networking? Pull out `net.sh`. Don't need colour? Drop `colour.sh`. Modules have minimal coupling to each other — as long as `runtime.sh` is kept, the rest can be mixed and matched freely and the compiler will handle it cleanly.
