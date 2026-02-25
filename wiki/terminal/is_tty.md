@@ -1,6 +1,6 @@
 # `terminal::is_tty`
 
-terminal.sh — bash-frameheader terminal lib
+Check if stdout is a terminal
 
 ## Usage
 

@@ -1,6 +1,6 @@
 # `process::service::is_running`
 
-==============================================================================
+Check if a systemd service is running
 
 ## Usage
 

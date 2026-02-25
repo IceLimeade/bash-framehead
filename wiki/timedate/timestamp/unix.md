@@ -1,6 +1,6 @@
 # `timedate::timestamp::unix`
 
-==============================================================================
+Current unix timestamp (seconds since epoch)
 
 ## Usage
 

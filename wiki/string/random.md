@@ -1,6 +1,6 @@
 # `string::random`
 
-==============================================================================
+Generate a random alphanumeric string of given length
 
 ## Usage
 

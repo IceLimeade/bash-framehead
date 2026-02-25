@@ -1,6 +1,6 @@
 # `random::lcg`
 
-==============================================================================
+Returns: next state (also the output value)
 
 ## Usage
 

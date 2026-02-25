@@ -1,6 +1,6 @@
 # `device::zero`
 
-==============================================================================
+Write n bytes of zeros to a device or file (wraps /dev/zero)
 
 ## Usage
 

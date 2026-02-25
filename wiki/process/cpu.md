@@ -1,6 +1,6 @@
 # `process::cpu`
 
-==============================================================================
+Get CPU usage percentage for a PID
 
 ## Usage
 

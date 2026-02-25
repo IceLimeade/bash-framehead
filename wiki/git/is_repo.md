@@ -1,6 +1,6 @@
 # `git::is_repo`
 
-git.sh — bash-frameheader git lib
+_No description available._
 
 ## Usage
 

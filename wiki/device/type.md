@@ -1,6 +1,6 @@
 # `device::type`
 
-==============================================================================
+Returns the type of a device as a string
 
 ## Usage
 

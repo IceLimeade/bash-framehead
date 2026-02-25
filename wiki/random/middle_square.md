@@ -1,6 +1,6 @@
 # `random::middle_square`
 
-==============================================================================
+Returns: next value (4-digit middle square extract)
 
 ## Usage
 

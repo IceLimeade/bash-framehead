@@ -4,7 +4,7 @@
 |----------|-------------|
 | [`git::ahead_count`](./git/ahead_count.md) | — |
 | [`git::behind_count`](./git/behind_count.md) | — |
-| [`git::branch::current`](./git/branch/current.md) | ============================================================================== |
+| [`git::branch::current`](./git/branch/current.md) | — |
 | [`git::branch::exists`](./git/branch/exists.md) | — |
 | [`git::branch::exists::remote`](./git/branch/exists/remote.md) | — |
 | [`git::branch::list`](./git/branch/list.md) | — |
@@ -15,15 +15,15 @@
 | [`git::commit::count`](./git/commit/count.md) | — |
 | [`git::commit::date`](./git/commit/date.md) | — |
 | [`git::commit::date::relative`](./git/commit/date/relative.md) | — |
-| [`git::commit::hash`](./git/commit/hash.md) | ============================================================================== |
+| [`git::commit::hash`](./git/commit/hash.md) | — |
 | [`git::commit::message`](./git/commit/message.md) | — |
 | [`git::commit::short_hash`](./git/commit/short_hash.md) | — |
-| [`git::exec`](./git/exec.md) | ============================================================================== |
-| [`git::has_remote`](./git/has_remote.md) | ============================================================================== |
+| [`git::exec`](./git/exec.md) | — |
+| [`git::has_remote`](./git/has_remote.md) | — |
 | [`git::is_ahead`](./git/is_ahead.md) | — |
 | [`git::is_behind`](./git/is_behind.md) | — |
 | [`git::is_dirty`](./git/is_dirty.md) | — |
-| [`git::is_repo`](./git/is_repo.md) | git.sh — bash-frameheader git lib |
+| [`git::is_repo`](./git/is_repo.md) | — |
 | [`git::is_staged`](./git/is_staged.md) | — |
 | [`git::is_stashed`](./git/is_stashed.md) | — |
 | [`git::log`](./git/log.md) | — |
@@ -34,6 +34,6 @@
 | [`git::stash::count`](./git/stash/count.md) | — |
 | [`git::tag::exists`](./git/tag/exists.md) | — |
 | [`git::tag::latest`](./git/tag/latest.md) | — |
-| [`git::tag::list`](./git/tag/list.md) | ============================================================================== |
+| [`git::tag::list`](./git/tag/list.md) | — |
 | [`git::unstaged::count`](./git/unstaged/count.md) | — |
 | [`git::untracked::count`](./git/untracked/count.md) | — |

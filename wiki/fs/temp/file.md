@@ -1,6 +1,6 @@
 # `fs::temp::file`
 
-==============================================================================
+Create a temporary file, print its path
 
 ## Usage
 

@@ -1,6 +1,6 @@
 # `array::unique`
 
-==============================================================================
+Remove duplicate elements (preserves first occurrence order)
 
 ## Usage
 

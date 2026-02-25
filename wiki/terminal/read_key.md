@@ -1,6 +1,6 @@
 # `terminal::read_key`
 
-==============================================================================
+Read a single keypress without requiring Enter
 
 ## Usage
 

@@ -1,6 +1,6 @@
 # `hash::djb2`
 
-==============================================================================
+DJB2 — Daniel J. Bernstein's hash, classic and fast
 
 ## Usage
 

@@ -1,6 +1,6 @@
 # `string::length`
 
-string.sh — bash-frameheader string lib
+Length of a string
 
 ## Usage
 

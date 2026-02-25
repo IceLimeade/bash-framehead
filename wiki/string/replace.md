@@ -1,6 +1,6 @@
 # `string::replace`
 
-==============================================================================
+Replace first occurrence of search with replace
 
 ## Usage
 

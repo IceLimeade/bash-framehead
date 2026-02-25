@@ -1,6 +1,6 @@
 # `hash::verify`
 
-==============================================================================
+Verify a string against a known hash
 
 ## Usage
 

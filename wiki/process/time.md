@@ -1,6 +1,6 @@
 # `process::time`
 
-==============================================================================
+Run a command and return its execution time in seconds
 
 ## Usage
 

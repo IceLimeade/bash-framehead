@@ -1,6 +1,6 @@
 # `process::run_bg`
 
-==============================================================================
+Run a command in the background, print its PID
 
 ## Usage
 

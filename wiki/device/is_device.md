@@ -1,6 +1,6 @@
 # `device::is_device`
 
-device.sh — bash-frameheader device lib
+Check if path is a character device
 
 ## Usage
 

@@ -1,6 +1,6 @@
 # `fs::watch`
 
-==============================================================================
+Watch a file for changes, run callback on change
 
 ## Usage
 

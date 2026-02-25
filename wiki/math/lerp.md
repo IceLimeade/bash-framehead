@@ -1,6 +1,6 @@
 # `math::lerp`
 
-==============================================================================
+Linear interpolation between a and b by factor t (0.0 - 1.0)
 
 ## Usage
 

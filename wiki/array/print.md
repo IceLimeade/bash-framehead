@@ -1,6 +1,6 @@
 # `array::print`
 
-==============================================================================
+Print each element on its own line (normalise for piping)
 
 ## Usage
 

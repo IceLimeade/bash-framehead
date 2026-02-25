@@ -5,7 +5,7 @@
 | [`timedate::calendar::day_of_year`](./timedate/calendar/day_of_year.md) | Get day of year for a date |
 | [`timedate::calendar::days_in_year`](./timedate/calendar/days_in_year.md) | Get number of days in a year |
 | [`timedate::calendar::easter`](./timedate/calendar/easter.md) | Calculate Easter date for a given year (Meeus/Jones/Butcher algorithm) |
-| [`timedate::calendar::is_leap_year`](./timedate/calendar/is_leap_year.md) | ============================================================================== |
+| [`timedate::calendar::is_leap_year`](./timedate/calendar/is_leap_year.md) | Check if a year is a leap year |
 | [`timedate::calendar::iso_week`](./timedate/calendar/iso_week.md) | Get ISO week number for a date |
 | [`timedate::calendar::is_weekday`](./timedate/calendar/is_weekday.md) | Check if a date falls on a weekday |
 | [`timedate::calendar::is_weekend`](./timedate/calendar/is_weekend.md) | Check if a date falls on a weekend |
@@ -34,7 +34,7 @@
 | [`timedate::date::prev_weekday`](./timedate/date/prev_weekday.md) | Previous occurrence of a weekday |
 | [`timedate::date::quarter`](./timedate/date/quarter.md) | Get quarter (1-4) |
 | [`timedate::date::sub_days`](./timedate/date/sub_days.md) | Subtract n days from a date |
-| [`timedate::date::today`](./timedate/date/today.md) | ============================================================================== |
+| [`timedate::date::today`](./timedate/date/today.md) | Current date in YYYY-MM-DD format |
 | [`timedate::date::tomorrow`](./timedate/date/tomorrow.md) | Get tomorrow's date |
 | [`timedate::date::week_end`](./timedate/date/week_end.md) | Get end of current week (Sunday) |
 | [`timedate::date::week_of_year`](./timedate/date/week_of_year.md) | Get week of year (ISO 8601, 01-53) |
@@ -43,7 +43,7 @@
 | [`timedate::date::year_end`](./timedate/date/year_end.md) | Get end of current year |
 | [`timedate::date::year_start`](./timedate/date/year_start.md) | Get start of current year |
 | [`timedate::date::yesterday`](./timedate/date/yesterday.md) | Get yesterday's date |
-| [`timedate::duration::format`](./timedate/duration/format.md) | ============================================================================== |
+| [`timedate::duration::format`](./timedate/duration/format.md) | Format seconds into human-readable duration |
 | [`timedate::duration::format_ms`](./timedate/duration/format_ms.md) | Format milliseconds into human-readable duration |
 | [`timedate::duration::parse`](./timedate/duration/parse.md) | Parse a duration string into seconds |
 | [`timedate::duration::relative`](./timedate/duration/relative.md) | Human-readable relative time from a unix timestamp |
@@ -57,19 +57,19 @@
 | [`timedate::time::is_evening`](./timedate/time/is_evening.md) | Check if currently evening (18:00-23:59) |
 | [`timedate::time::is_morning`](./timedate/time/is_morning.md) | Check if currently morning (00:00-11:59) |
 | [`timedate::time::minute`](./timedate/time/minute.md) | Get minute (00-59) |
-| [`timedate::time::now`](./timedate/time/now.md) | ============================================================================== |
+| [`timedate::time::now`](./timedate/time/now.md) | Current time in HH:MM:SS |
 | [`timedate::time::second`](./timedate/time/second.md) | Get second (00-59) |
 | [`timedate::time::sleep`](./timedate/time/sleep.md) | Sleep with a progress indicator |
 | [`timedate::timestamp::from_human`](./timedate/timestamp/from_human.md) | Convert human-readable date to unix timestamp |
 | [`timedate::timestamp::to_human`](./timedate/timestamp/to_human.md) | Convert unix timestamp to human-readable |
-| [`timedate::timestamp::unix`](./timedate/timestamp/unix.md) | ============================================================================== |
+| [`timedate::timestamp::unix`](./timedate/timestamp/unix.md) | Current unix timestamp (seconds since epoch) |
 | [`timedate::timestamp::unix_ms`](./timedate/timestamp/unix_ms.md) | Current unix timestamp in milliseconds |
 | [`timedate::timestamp::unix_ns`](./timedate/timestamp/unix_ns.md) | Current unix timestamp in nanoseconds |
 | [`timedate::time::stopwatch::start`](./timedate/time/stopwatch/start.md) | Stopwatch — start, returns a token |
 | [`timedate::time::stopwatch::stop`](./timedate/time/stopwatch/stop.md) | Stopwatch — stop, returns elapsed ms |
 | [`timedate::time::timezone`](./timedate/time/timezone.md) | Get timezone abbreviation |
 | [`timedate::time::timezone_offset`](./timedate/time/timezone_offset.md) | Get timezone offset from UTC (e.g. +0800) |
-| [`timedate::tz::convert`](./timedate/tz/convert.md) | ============================================================================== |
+| [`timedate::tz::convert`](./timedate/tz/convert.md) | Convert a timestamp to a different timezone |
 | [`timedate::tz::current`](./timedate/tz/current.md) | Get current timezone name |
 | [`timedate::tz::is_dst`](./timedate/tz/is_dst.md) | Check if currently in daylight saving time |
 | [`timedate::tz::list`](./timedate/tz/list.md) | List all available timezones |

@@ -1,6 +1,6 @@
 # `string::split`
 
-==============================================================================
+Split a string by delimiter into lines (one element per line)
 
 ## Usage
 

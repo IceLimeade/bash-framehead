@@ -22,8 +22,8 @@
 | [`colour::bold`](./colour/bold.md) | — |
 | [`colour::depth`](./colour/depth.md) | Return the number of colours the terminal supports |
 | [`colour::dim`](./colour/dim.md) | — |
-| [`colour::esc`](./colour/esc.md) | ============================================================================== |
-| [`colour::fg::black`](./colour/fg/black.md) | ============================================================================== |
+| [`colour::esc`](./colour/esc.md) | Generate a raw ANSI escape sequence |
+| [`colour::fg::black`](./colour/fg/black.md) | Foreground |
 | [`colour::fg::blue`](./colour/fg/blue.md) | — |
 | [`colour::fg::bright_black`](./colour/fg/bright_black.md) | — |
 | [`colour::fg::bright_blue`](./colour/fg/bright_blue.md) | — |
@@ -41,12 +41,12 @@
 | [`colour::fg::yellow`](./colour/fg/yellow.md) | — |
 | [`colour::has_colour`](./colour/has_colour.md) | Check if a string contains any ANSI escape codes |
 | [`colour::hidden`](./colour/hidden.md) | — |
-| [`colour::index::4bit`](./colour/index/4bit.md) | ============================================================================== |
+| [`colour::index::4bit`](./colour/index/4bit.md) | Get 4-bit ANSI colour code index |
 | [`colour::index::8bit`](./colour/index/8bit.md) | Get 8-bit colour index (0-255) |
 | [`colour::italic`](./colour/italic.md) | — |
-| [`colour::print`](./colour/print.md) | ============================================================================== |
+| [`colour::print`](./colour/print.md) | Print text wrapped in colour, auto-reset after |
 | [`colour::println`](./colour/println.md) | Print text in colour followed by newline |
-| [`colour::reset`](./colour/reset.md) | ============================================================================== |
+| [`colour::reset`](./colour/reset.md) | — |
 | [`colour::reset::bg`](./colour/reset/bg.md) | — |
 | [`colour::reset::blink`](./colour/reset/blink.md) | — |
 | [`colour::reset::bold`](./colour/reset/bold.md) | Reset individual attributes |
@@ -61,7 +61,7 @@
 | [`colour::safe_esc`](./colour/safe_esc.md) | Gracefully degrade — return escape code only if terminal supports the depth |
 | [`colour::strike`](./colour/strike.md) | — |
 | [`colour::strip`](./colour/strip.md) | Strip all ANSI escape codes from a string |
-| [`colour::supports`](./colour/supports.md) | colour.sh — bash-frameheader colour lib |
+| [`colour::supports`](./colour/supports.md) | Check if the terminal supports any colour |
 | [`colour::supports_256`](./colour/supports_256.md) | Check if terminal supports 256 colours |
 | [`colour::supports_truecolor`](./colour/supports_truecolor.md) | Check if terminal supports true colour (24-bit) |
 | [`colour::underline`](./colour/underline.md) | — |

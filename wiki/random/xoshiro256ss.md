@@ -1,6 +1,6 @@
 # `random::xoshiro256ss`
 
-==============================================================================
+Returns: "result s0_new s1_new s2_new s3_new"
 
 ## Usage
 

@@ -1,6 +1,6 @@
 # `hardware::swap::totalSpaceMB`
 
-==============================================================================
+_No description available._
 
 ## Usage
 

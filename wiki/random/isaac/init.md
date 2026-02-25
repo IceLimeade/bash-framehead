@@ -1,6 +1,6 @@
 # `random::isaac::init`
 
-==============================================================================
+Initialise simplified ISAAC state
 
 ## Usage
 

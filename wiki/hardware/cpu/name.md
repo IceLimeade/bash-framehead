@@ -1,6 +1,6 @@
 # `hardware::cpu::name`
 
-hardware.sh — bash-frameheader hardware lib
+_No description available._
 
 ## Usage
 

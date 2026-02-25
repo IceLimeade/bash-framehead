@@ -1,6 +1,6 @@
 # `random::xorshift64`
 
-==============================================================================
+Returns: next state (also the output value)
 
 ## Usage
 

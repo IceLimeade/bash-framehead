@@ -1,6 +1,6 @@
 # `net::is_online`
 
-net.sh — bash-frameheader networking lib
+Check if the system has a working internet connection
 
 ## Usage
 

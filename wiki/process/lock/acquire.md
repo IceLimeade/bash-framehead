@@ -1,6 +1,6 @@
 # `process::lock::acquire`
 
-==============================================================================
+Acquire a lock — returns 1 if already locked
 
 ## Usage
 

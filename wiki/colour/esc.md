@@ -1,6 +1,6 @@
 # `colour::esc`
 
-==============================================================================
+Generate a raw ANSI escape sequence
 
 ## Usage
 

@@ -1,6 +1,6 @@
 # `colour::supports`
 
-colour.sh — bash-frameheader colour lib
+Check if the terminal supports any colour
 
 ## Usage
 

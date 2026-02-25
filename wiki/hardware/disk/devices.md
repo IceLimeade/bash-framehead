@@ -1,6 +1,6 @@
 # `hardware::disk::devices`
 
-==============================================================================
+_No description available._
 
 ## Usage
 

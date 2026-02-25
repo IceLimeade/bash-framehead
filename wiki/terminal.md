@@ -3,7 +3,7 @@
 | Function | Description |
 |----------|-------------|
 | [`terminal::bell`](./terminal/bell.md) | Ring the terminal bell |
-| [`terminal::clear`](./terminal/clear.md) | ============================================================================== |
+| [`terminal::clear`](./terminal/clear.md) | Clear entire screen |
 | [`terminal::clear::line`](./terminal/clear/line.md) | Clear current line |
 | [`terminal::clear::line_end`](./terminal/clear/line_end.md) | Clear from cursor to end of line |
 | [`terminal::clear::line_start`](./terminal/clear/line_start.md) | Clear from cursor to start of line |
@@ -22,7 +22,7 @@
 | [`terminal::cursor::restore`](./terminal/cursor/restore.md) | Restore cursor to saved position |
 | [`terminal::cursor::right`](./terminal/cursor/right.md) | Move cursor right n cols |
 | [`terminal::cursor::save`](./terminal/cursor/save.md) | Save cursor position |
-| [`terminal::cursor::show`](./terminal/cursor/show.md) | ============================================================================== |
+| [`terminal::cursor::show`](./terminal/cursor/show.md) | — |
 | [`terminal::cursor::toggle`](./terminal/cursor/toggle.md) | — |
 | [`terminal::cursor::up`](./terminal/cursor/up.md) | Move cursor up n rows |
 | [`terminal::echo::off`](./terminal/echo/off.md) | Disable terminal echo (e.g. for password input) |
@@ -31,11 +31,11 @@
 | [`terminal::has_colour`](./terminal/has_colour.md) | Check if terminal supports colours |
 | [`terminal::has_truecolour`](./terminal/has_truecolour.md) | Check if terminal supports true colour |
 | [`terminal::height`](./terminal/height.md) | Get terminal height in rows |
-| [`terminal::is_tty`](./terminal/is_tty.md) | terminal.sh — bash-frameheader terminal lib |
+| [`terminal::is_tty`](./terminal/is_tty.md) | Check if stdout is a terminal |
 | [`terminal::is_tty::stderr`](./terminal/is_tty/stderr.md) | Check if stderr is a terminal |
 | [`terminal::is_tty::stdin`](./terminal/is_tty/stdin.md) | Check if stdin is a terminal |
 | [`terminal::name`](./terminal/name.md) | Return the terminal emulator name if detectable |
-| [`terminal::read_key`](./terminal/read_key.md) | ============================================================================== |
+| [`terminal::read_key`](./terminal/read_key.md) | Read a single keypress without requiring Enter |
 | [`terminal::read_key::timeout`](./terminal/read_key/timeout.md) | Read a single keypress with a timeout |
 | [`terminal::read_password`](./terminal/read_password.md) | Read a password (no echo) |
 | [`terminal::screen::alternate`](./terminal/screen/alternate.md) | Enter alternate screen buffer (like vim/less do) |
@@ -54,7 +54,7 @@
 | [`terminal::shopt::disable`](./terminal/shopt/disable.md) | Disable a shopt option |
 | [`terminal::shopt::dotglob::disable`](./terminal/shopt/dotglob/disable.md) | — |
 | [`terminal::shopt::dotglob::enable`](./terminal/shopt/dotglob/enable.md) | — |
-| [`terminal::shopt::enable`](./terminal/shopt/enable.md) | ============================================================================== |
+| [`terminal::shopt::enable`](./terminal/shopt/enable.md) | Enable a shopt option, return 1 if unsupported |
 | [`terminal::shopt::extglob::disable`](./terminal/shopt/extglob/disable.md) | — |
 | [`terminal::shopt::extglob::enable`](./terminal/shopt/extglob/enable.md) | — |
 | [`terminal::shopt::get`](./terminal/shopt/get.md) | Get current value of a shopt option ("on" or "off") |

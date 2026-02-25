@@ -1,6 +1,6 @@
 # `timedate::calendar::is_leap_year`
 
-==============================================================================
+Check if a year is a leap year
 
 ## Usage
 

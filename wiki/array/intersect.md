@@ -1,6 +1,6 @@
 # `array::intersect`
 
-==============================================================================
+Intersection — elements present in both arrays
 
 ## Usage
 

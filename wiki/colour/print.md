@@ -1,6 +1,6 @@
 # `colour::print`
 
-==============================================================================
+Print text wrapped in colour, auto-reset after
 
 ## Usage
 

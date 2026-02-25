@@ -1,6 +1,6 @@
 # `array::from_string`
 
-!/usr/bin/env bash
+Build an array from a delimited string
 
 ## Usage
 

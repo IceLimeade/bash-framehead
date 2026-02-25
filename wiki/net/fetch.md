@@ -1,6 +1,6 @@
 # `net::fetch`
 
-==============================================================================
+Fetch URL contents — curl/wget with fallback
 
 ## Usage
 

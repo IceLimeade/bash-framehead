@@ -1,6 +1,6 @@
 # `fs::path::join`
 
-fs.sh — bash-frameheader filesystem lib
+Join path components
 
 ## Usage
 

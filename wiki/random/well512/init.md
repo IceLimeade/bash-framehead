@@ -1,6 +1,6 @@
 # `random::well512::init`
 
-==============================================================================
+Initialise WELL512 state from a single seed via splitmix64
 
 ## Usage
 

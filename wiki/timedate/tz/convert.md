@@ -1,6 +1,6 @@
 # `timedate::tz::convert`
 
-==============================================================================
+Convert a timestamp to a different timezone
 
 ## Usage
 

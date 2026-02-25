@@ -1,6 +1,6 @@
 # `hardware::ram::totalSpaceMB`
 
-==============================================================================
+_No description available._
 
 ## Usage
 

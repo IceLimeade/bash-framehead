@@ -1,6 +1,6 @@
 # `net::ip::local`
 
-==============================================================================
+Get local IP address (first non-loopback)
 
 ## Usage
 

@@ -1,6 +1,6 @@
 # `timedate::date::today`
 
-==============================================================================
+Current date in YYYY-MM-DD format
 
 ## Usage
 

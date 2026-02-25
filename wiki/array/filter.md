@@ -1,6 +1,6 @@
 # `array::filter`
 
-==============================================================================
+Filter elements matching a regex
 
 ## Usage
 

@@ -1,6 +1,6 @@
 # `timedate::duration::format`
 
-==============================================================================
+Format seconds into human-readable duration
 
 ## Usage
 

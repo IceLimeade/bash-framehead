@@ -1,6 +1,6 @@
 # `process::is_running`
 
-process.sh — bash-frameheader process management lib
+Check if a process is running by PID
 
 ## Usage
 

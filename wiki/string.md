@@ -59,7 +59,7 @@
 | [`string::kebab_to_path`](./string/kebab_to_path.md) | kebab-case → path/case |
 | [`string::kebab_to_plain`](./string/kebab_to_plain.md) | kebab-case → plain |
 | [`string::kebab_to_snake`](./string/kebab_to_snake.md) | kebab-case → snake_case |
-| [`string::length`](./string/length.md) | string.sh — bash-frameheader string lib |
+| [`string::length`](./string/length.md) | Length of a string |
 | [`string::lower`](./string/lower.md) | Convert to lowercase |
 | [`string::lower::legacy`](./string/lower/legacy.md) | Convert to lowercase (Bash 3 compatible) |
 | [`string::matches`](./string/matches.md) | Check if string matches a regex |
@@ -88,11 +88,11 @@
 | [`string::plain_to_pascal`](./string/plain_to_pascal.md) | plain → PascalCase |
 | [`string::plain_to_path`](./string/plain_to_path.md) | plain → path/case |
 | [`string::plain_to_snake`](./string/plain_to_snake.md) | plain (space-separated) → snake_case |
-| [`string::random`](./string/random.md) | ============================================================================== |
+| [`string::random`](./string/random.md) | Generate a random alphanumeric string of given length |
 | [`string::remove`](./string/remove.md) | Remove all occurrences of a substring |
 | [`string::remove_first`](./string/remove_first.md) | Remove first occurrence of a substring |
 | [`string::repeat`](./string/repeat.md) | Repeat a string n times |
-| [`string::replace`](./string/replace.md) | ============================================================================== |
+| [`string::replace`](./string/replace.md) | Replace first occurrence of search with replace |
 | [`string::replace_all`](./string/replace_all.md) | Replace all occurrences of search with replace |
 | [`string::reverse`](./string/reverse.md) | Reverse a string |
 | [`string::sha256`](./string/sha256.md) | SHA256 hash of a string |
@@ -103,17 +103,17 @@
 | [`string::snake_to_pascal`](./string/snake_to_pascal.md) | snake_case → PascalCase |
 | [`string::snake_to_path`](./string/snake_to_path.md) | snake_case → path/case |
 | [`string::snake_to_plain`](./string/snake_to_plain.md) | snake_case → plain |
-| [`string::split`](./string/split.md) | ============================================================================== |
+| [`string::split`](./string/split.md) | Split a string by delimiter into lines (one element per line) |
 | [`string::starts_with`](./string/starts_with.md) | Check if string starts with prefix |
 | [`string::strip_spaces`](./string/strip_spaces.md) | Remove all whitespace |
-| [`string::substr`](./string/substr.md) | ============================================================================== |
+| [`string::substr`](./string/substr.md) | Extract substring |
 | [`string::title`](./string/title.md) | Convert to title case (capitalise first letter of each word) |
 | [`string::trim`](./string/trim.md) | Trim both leading and trailing whitespace |
-| [`string::trim_left`](./string/trim_left.md) | ============================================================================== |
+| [`string::trim_left`](./string/trim_left.md) | Trim leading whitespace |
 | [`string::trim_right`](./string/trim_right.md) | Trim trailing whitespace |
 | [`string::truncate`](./string/truncate.md) | Truncate a string to max length, appending suffix if truncated |
-| [`string::upper`](./string/upper.md) | ============================================================================== |
+| [`string::upper`](./string/upper.md) | Convert to uppercase |
 | [`string::upper::legacy`](./string/upper/legacy.md) | Convert to uppercase (Bash 3 compatible) |
 | [`string::url_decode`](./string/url_decode.md) | — |
-| [`string::url_encode`](./string/url_encode.md) | ============================================================================== |
+| [`string::url_encode`](./string/url_encode.md) | URL-encode a string |
 | [`string::uuid`](./string/uuid.md) | Generate a UUID v4 (random) |

@@ -1,6 +1,6 @@
 # `net::interface::list`
 
-==============================================================================
+List all network interfaces
 
 ## Usage
 
