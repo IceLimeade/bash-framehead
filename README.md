@@ -88,15 +88,6 @@ source "$(dirname "$0")/compiled.sh"
 
 Full documentation lives in [`wiki/`](./wiki/).
 
-### Using only some modules
-
-Modules are designed to be self-contained. To build a stripped-down version, just remove the modules you don't need from `src/` before compiling. The only hard requirement is `runtime.sh` — everything else depends on it for capability detection and OS abstraction. Beyond that, cross-module dependencies are minimal and explicitly noted in each module's header.
-
-```bash
-# Example: a minimal build with just string, math, and fs
-./main.sh compile --modules runtime,string,math,fs myslim.sh
-```
-
 ---
 
 ## Common tasks
