@@ -270,7 +270,7 @@ device::list::mounted() {
 # Usage: device::zero target [bytes]
 # WARNING: Destructive — use with care
 device::zero() {
-    local target="$1" bytes="${2:-}"
+    local target="$1" bytes="${2:-16}"
     if [[ -n "$bytes" ]]; then
         dd if=/dev/zero of="$target" bs=1 count="$bytes" 2>/dev/null
     else

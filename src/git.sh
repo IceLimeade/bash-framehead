@@ -33,17 +33,17 @@ git::stash::count() {
 }
 
 git::staged::count() {
-    git::is_repo || echo 0 && return
+    git::is_repo || { echo 0; return; }
     git diff --cached --numstat 2>/dev/null | wc -l | xargs
 }
 
 git::unstaged::count() {
-    git::is_repo || echo 0 && return
+    git::is_repo || { echo 0; return; }
     git diff --numstat 2>/dev/null | wc -l | xargs
 }
 
 git::untracked::count() {
-    git::is_repo || echo 0 && return
+    git::is_repo || { echo 0; return; }
     git ls-files --others --exclude-standard 2>/dev/null | wc -l | xargs
 }
 
@@ -128,7 +128,7 @@ git::commit::date::relative() {
 }
 
 git::commit::count() {
-    git::is_repo || echo 0 && return
+    git::is_repo || { echo 0; return; }
     git rev-list --count HEAD 2>/dev/null || echo 0
 }
 
@@ -168,14 +168,14 @@ git::is_behind() {
 }
 
 git::ahead_count() {
-    git::is_repo || echo 0 && return
+    git::is_repo || { echo 0; return; }
     local branch
     branch=$(git::branch::current)
     git rev-list --count "origin/${branch}..HEAD" 2>/dev/null || echo 0
 }
 
 git::behind_count() {
-    git::is_repo || echo 0 && return
+    git::is_repo || { echo 0; return; }
     local branch
     branch=$(git::branch::current)
     git rev-list --count "HEAD..origin/${branch}" 2>/dev/null || echo 0

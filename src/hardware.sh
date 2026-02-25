@@ -188,22 +188,19 @@ hardware::cpu::temp() {
 
 hardware::gpu() {
     case "$(runtime::os)" in
-    linux|wsl|cygwin|mingw)
-        if runtime::has_command lspci; then
-            lspci -mm 2>/dev/null | awk -F '"| "|\(' \
-                '/"Display|"3D|"VGA/ {
-                    a[$0] = $1 " " $3 " " ($(NF-1) ~ /^$|^Device [[:xdigit:]]+$/ ? $4 : $(NF-1))
-                }
-                END { for (i in a) {
-                    if (!seen[a[i]]++) {
-                        sub("^[^ ]+ ", "", a[i])
-                        print a[i]
-                    }
-                }}' | head -1 | xargs
-        else
-            echo "unknown"
-        fi
-        ;;
+        linux|wsl|cygwin|mingw)
+            if runtime::has_command nvidia-smi; then
+                nvidia-smi -q 2>/dev/null | awk -F': ' '/Product Name/ { print $2; exit }' | xargs
+            elif runtime::has_command lspci; then
+                lspci -mm 2>/dev/null | awk -F'"' \
+                    '/VGA|3D|Display/ { print $6 }' | head -1 | xargs
+            elif runtime::has_command glxinfo; then
+                glxinfo 2>/dev/null | awk -F': ' \
+                    '/OpenGL renderer string/ { print $2 }' | head -1 | xargs
+            else
+                echo "unknown"
+            fi
+            ;;
     darwin)
         system_profiler SPDisplaysDataType 2>/dev/null \
             | awk -F': ' '/Chipset Model/ { printf $2", " }' \

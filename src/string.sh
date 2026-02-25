@@ -449,7 +449,10 @@ string::path_to_snake() {
 
 # path/case → kebab-case
 string::path_to_kebab() {
-  echo "${1//\/-/}"
+  local path="$1"
+  path="${path//\\/-}"  # Replace backslashes
+  path="${path//\//-}"  # Replace forward slashes
+  echo "$path"
 }
 
 # path/case → camelCase
@@ -650,12 +653,38 @@ string::pad_center() {
 # Truncate a string to max length, appending suffix if truncated
 # Usage: string::truncate str max [suffix]
 string::truncate() {
-  local s="$1" max="$2" suffix="${3:-...}"
+  local s="$1" max="$2"
+  local suffix
+
   if ((${#s} <= max)); then
     echo "$s"
-  else
-    echo "${s:0:$((max - ${#suffix}))}${suffix}"
+    return 0
   fi
+
+  # Handle very small max values
+  if ((max <= 1)); then
+    # Can only show suffix
+    echo "…"
+    return 0
+  elif ((max == 2)); then
+    # Can show 1 char + single ellipsis
+    echo "${s:0:1}…"
+    return 0
+  fi
+
+  # Determine which suffix to use based on available space
+  local available_chars=$((max - 3))  # Try with 3-dot suffix first
+
+  if ((available_chars < 3)); then
+    # If we'd have less than 3 chars from original with 3-dot suffix,
+    # use single ellipsis instead
+    suffix="…"
+    available_chars=$((max - 1))
+  else
+    suffix="..."
+  fi
+
+  echo "${s:0:$available_chars}${suffix}"
 }
 
 # ==============================================================================
@@ -667,9 +696,11 @@ string::truncate() {
 string::split() {
   local s="$1" delim="$2"
   local IFS="$delim"
-  local -a parts=("$s")
-  printf '%s\n' "${parts[@]}"
+  # Remove IFS from positional parameters to enable word splitting
+  set -- $s
+  printf '%s\n' "$@"
 }
+
 
 # Join an array of arguments with a delimiter
 # Usage: string::join delimiter arg1 arg2 ...

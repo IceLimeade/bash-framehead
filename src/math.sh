@@ -34,9 +34,6 @@ math::has_bc() {
     runtime::has_command bc
 }
 
-# Safe bc wrapper — checks availability, applies scale
-# Usage: math::bc expression [scale]
-# Example: math::bc "4 * a(1)" 42
 math::bc() {
     local expr="$1" scale="${2:-$MATH_SCALE}"
     if ! math::has_bc; then
@@ -45,6 +42,12 @@ math::bc() {
     fi
     echo "scale=${scale}; ${expr}" | bc -l
 }
+
+
+# Safe bc wrapper — checks availability, applies scale
+# Usage: math::bc expression [scale]
+# Example: math::bc "4 * a(1)" 42
+
 
 # ==============================================================================
 # BASIC INTEGER ARITHMETIC
@@ -73,6 +76,16 @@ math::clamp() {
     local n="$1" lo="$2" hi="$3"
     echo $(( n < lo ? lo : (n > hi ? hi : n) ))
 }
+
+math::clampf() {
+    local n="$1" lo="$2" hi="$3"
+    local scale=${4:-$MATH_SCALE}
+    local result
+    result=$(math::bc "if ($n < $lo) $lo else if ($n > $hi) $hi else $n" "$scale")
+    # Format with consistent decimal places (bc is being inconsistent for some reason)
+    printf "%.${scale}f\n" "$result"
+}
+
 
 # Integer division (truncated toward zero)
 # Usage: math::div dividend divisor
@@ -207,13 +220,9 @@ math::floor() {
 
 # Ceiling — smallest integer ≥ n
 math::ceil() {
-    local n="$1"
-    math::bc "define ceil(x) {
-        auto r; scale=0; r = x/1
-        if (r < x) return r+1
-        return r
-    }; ceil($n)"
+    math::bc "scale=0; if ($1 == ($1 / 1)) $1 else if ($1 > 0) ($1 / 1) + 1 else ($1 / 1)"
 }
+
 
 # Round to nearest integer (or to d decimal places)
 # Usage: math::round n [decimal_places]
@@ -224,7 +233,8 @@ math::round() {
 
 # Square root
 math::sqrt() {
-    math::bc "sqrt($1)"
+    local scale="${2:-$MATH_SCALE}"
+    math::bc "sqrt($1)" "$scale"
 }
 
 # Natural logarithm
@@ -335,7 +345,7 @@ math::percent_change() {
 # Usage: math::lerp a b t [scale]
 math::lerp() {
     local a="$1" b="$2" t="$3" scale="${4:-$MATH_SCALE}"
-    math::bc "$a + ($b - $a) * $(math::clamp "$t" 0 1)" "$scale"
+    math::bc "$a + ($b - $a) * $(math::clampf "$t" 0 1)" "$scale"
 }
 
 math::lerp_unclamped() {
@@ -427,13 +437,11 @@ math::is_palindrome() {
     (( n == rev ))
 }
 
-#!/usr/bin/env bash
 # math::unitconvert — universal unit conversion dispatcher
 # Usage: math::unitconvert from to value [scale]
 # Example: math::unitconvert km mi 100
-#          math::unitconvert celsius fahrenheit 37
+#          math::unitconvert femtosecond nanosecond 1000
 #          math::unitconvert b gib 1073741824
-#          math::unitconvert sector4k mib 2048
 
 math::unitconvert() {
     local from="${1,,}" to="${2,,}" value="$3" scale="${4:-$MATH_SCALE}"
@@ -443,10 +451,126 @@ math::unitconvert() {
         return 1
     }
 
+    # Normalise verbose/alternative names to canonical short keys
+    local -A _n=(
+        # Temperature
+        [celsius]="celsius"   [centigrade]="celsius"
+        [fahrenheit]="fahrenheit"
+        [kelvin]="kelvin"
+
+        # Length
+        [femtometre]="fm"     [femtometer]="fm"   [femtometres]="fm"  [femtometers]="fm"
+        [picometre]="pm"      [picometer]="pm"    [picometres]="pm"   [picometers]="pm"
+        [nanometre_si]="nm_si" [nanometer_si]="nm_si"
+        [micrometre]="um"     [micrometer]="um"   [micrometres]="um"  [micrometers]="um"   [um]="um"
+        [millimetre]="mm"     [millimeter]="mm"   [millimetres]="mm"  [millimeters]="mm"   [mm]="mm"
+        [centimetre]="cm"     [centimeter]="cm"   [centimetres]="cm"  [centimeters]="cm"   [cm]="cm"
+        [metre]="m"           [meter]="m"         [metres]="m"        [meters]="m"
+        [kilometre]="km"      [kilometer]="km"    [kilometres]="km"   [kilometers]="km"    [km]="km"
+        [inch]="in"           [inches]="in"
+        [foot]="ft"           [feet]="ft"
+        [yard]="yd"           [yards]="yd"
+        [mile]="mi"           [miles]="mi"
+        [nautical_mile]="nm"  [nautical_miles]="nm"
+        [astronomical_unit]="au" [astronomical_units]="au"
+        [light_year]="ly"     [lightyear]="ly"    [light_years]="ly"  [lightyears]="ly"
+        [light_hour]="lh"     [lighthour]="lh"    [light_hours]="lh"  [lighthours]="lh"
+        [light_day]="ld"      [lightday]="ld"     [light_days]="ld"   [lightdays]="ld"
+        [parsec]="pc"         [parsecs]="pc"
+
+        # Mass
+        [microgram]="ug"      [micrograms]="ug"
+        [milligram]="mg"      [milligrams]="mg"   [mg]="mg"
+        [gram]="g"            [grams]="g"
+        [kilogram]="kg"       [kilograms]="kg"    [kg]="kg"
+        [tonne]="t"           [metric_ton]="t"    [metric_tons]="t"
+        [ounce]="oz"          [ounces]="oz"
+        [pound]="lb"          [pounds]="lb"       [lbs]="lb"
+        [stone]="st"          [stones]="st"
+
+        # Volume
+        [millilitre]="ml"     [milliliter]="ml"   [millilitres]="ml"  [milliliters]="ml"   [ml]="ml"
+        [litre]="l"           [liter]="l"         [litres]="l"        [liters]="l"
+        [cubic_metre]="m3"    [cubic_meter]="m3"
+        [teaspoon]="tsp"      [teaspoons]="tsp"
+        [tablespoon]="tbsp"   [tablespoons]="tbsp"
+        [fluid_ounce]="floz"  [fluid_ounces]="floz"
+        [pint]="pt"           [pints]="pt"
+        [quart]="qt"          [quarts]="qt"
+        [gallon]="gal"        [gallons]="gal"
+
+        # Speed
+        [kph]="kmh"           [km_h]="kmh"        [kilometres_per_hour]="kmh" [kilometers_per_hour]="kmh"
+        [mph]="mph"           [miles_per_hour]="mph"
+        [m_s]="ms"            [metres_per_second]="ms" [meters_per_second]="ms"
+        [knot]="knot"         [knots]="knot"
+        [mach]="mach"
+        [speed_of_light]="c"
+
+        # Pressure
+        [pascal]="pa"         [pascals]="pa"
+        [kilopascal]="kpa"    [kilopascals]="kpa"
+        [bar]="bar"           [bars]="bar"
+        [atmosphere]="atm"    [atmospheres]="atm"
+        [pounds_per_square_inch]="psi"
+        [millimetre_of_mercury]="mmhg" [millimeter_of_mercury]="mmhg" [torr]="mmhg"
+
+        # Energy
+        [joule]="j"           [joules]="j"
+        [kilojoule]="kj"      [kilojoules]="kj"
+        [calorie]="cal"       [calories]="cal"
+        [kilocalorie]="kcal"  [kilocalories]="kcal"
+        [kilowatt_hour]="kwh" [kilowatt_hours]="kwh"
+        [electronvolt]="ev"   [electronvolts]="ev"
+        [british_thermal_unit]="btu" [british_thermal_units]="btu"
+
+        # Power
+        [watt]="w"            [watts]="w"
+        [kilowatt]="kw"       [kilowatts]="kw"
+        [horsepower]="hp"
+
+        # Digital storage
+        [bit]="b"             [bits]="b"
+        [kilobit]="kb"        [kilobits]="kb"
+        [megabit]="mb"        [megabits]="mb"
+        [gigabit]="gb"        [gigabits]="gb"
+        [terabit]="tb"        [terabits]="tb"
+        [petabit]="pb"        [petabits]="pb"
+        [kibibit]="kib"       [kibibits]="kib"
+        [mebibit]="mib"       [mebibits]="mib"
+        [gibibit]="gib"       [gibibits]="gib"
+        [tebibit]="tib"       [tebibits]="tib"
+        [pebibit]="pib"       [pebibits]="pib"
+        [sector]="sector"     [sectors]="sector"  [512b]="sector"
+        [sector4k]="sector4k" [4k_sector]="sector4k" [advanced_format]="sector4k"
+
+        # Time
+        [femtosecond]="fs"    [femtoseconds]="fs"
+        [picosecond]="ps"     [picoseconds]="ps"
+        [nanosecond]="ns"     [nanoseconds]="ns"  [ns]="ns"
+        [microsecond]="us"    [microseconds]="us" [us]="us"
+        [millisecond]="ms"    [milliseconds]="ms" [ms]="ms"
+        [second]="s"          [seconds]="s"       [sec]="s"
+        [minute]="min"        [minutes]="min"
+        [hour]="h"            [hours]="h"         [hr]="h"
+        [day]="d"             [days]="d"
+        [week]="week"         [weeks]="week"
+        [year]="year"         [years]="year"      [yr]="year"
+
+        # Angle
+        [degree]="deg"        [degrees]="deg"
+        [radian]="rad"        [radians]="rad"
+        [gradian]="grad"      [gradians]="grad"   [gon]="grad"
+        [arcminute]="arcmin"  [arcminutes]="arcmin"
+        [arcsecond]="arcsec"  [arcseconds]="arcsec"
+    )
+
+    # Apply normalisation — fall back to original if not in table
+    [[ -n "${_n[$from]+x}" ]] && from="${_n[$from]}"
+    [[ -n "${_n[$to]+x}"   ]] && to="${_n[$to]}"
+
     [[ "$from" == "$to" ]] && echo "$value" && return 0
 
-    from=$(_math::unitconvert::normalise "$from")
-    to=$(_math::unitconvert::normalise "$to")
     local key="${from}:${to}"
     local expr
 
@@ -479,11 +603,11 @@ math::unitconvert() {
     m:mm)               expr="$value * 1000" ;;
     cm:mm)              expr="$value * 10" ;;
     mm:cm)              expr="$value / 10" ;;
-    nm_si:m)            expr="$value / 1000000000" ;;           # nanometres (SI) — nm taken by nautical
+    nm_si:m)            expr="$value / 1000000000" ;;
     m:nm_si)            expr="$value * 1000000000" ;;
-    pm:m)               expr="$value / 1000000000000" ;;        # picometres
+    pm:m)               expr="$value / 1000000000000" ;;
     m:pm)               expr="$value * 1000000000000" ;;
-    fm:m)               expr="$value / 1000000000000000" ;;     # femtometres (10^-15 m)
+    fm:m)               expr="$value / 1000000000000000" ;;
     m:fm)               expr="$value * 1000000000000000" ;;
     fm:pm)              expr="$value / 1000" ;;
     pm:fm)              expr="$value * 1000" ;;
@@ -491,13 +615,13 @@ math::unitconvert() {
     pm:nm_si)           expr="$value / 1000" ;;
     nm_si:fm)           expr="$value * 1000000" ;;
     fm:nm_si)           expr="$value / 1000000" ;;
-    nm:km)              expr="$value * 1.852" ;;                # nautical miles
+    nm:km)              expr="$value * 1.852" ;;
     km:nm)              expr="$value / 1.852" ;;
     ly:km)              expr="$value * 9460730472580.8" ;;
     km:ly)              expr="$value / 9460730472580.8" ;;
-    lh:km)              expr="$value * 1079251200" ;;           # light-hours
+    lh:km)              expr="$value * 1079251200" ;;
     km:lh)              expr="$value / 1079251200" ;;
-    ld:km)              expr="$value * 25902068371.2" ;;        # light-days
+    ld:km)              expr="$value * 25902068371.2" ;;
     km:ld)              expr="$value / 25902068371.2" ;;
     lh:ly)              expr="$value / 8765.81" ;;
     ly:lh)              expr="$value * 8765.81" ;;
@@ -594,7 +718,6 @@ math::unitconvert() {
     hp:kw)              expr="$value / 1.34102" ;;
 
     # --- Digital storage ---
-    # SI prefixes (powers of 1000)
     b:kb)               expr="$value / 1000" ;;
     kb:b)               expr="$value * 1000" ;;
     b:mb)               expr="$value / 1000000" ;;
@@ -611,7 +734,6 @@ math::unitconvert() {
     tb:gb)              expr="$value * 1000" ;;
     tb:pb)              expr="$value / 1000" ;;
     pb:tb)              expr="$value * 1000" ;;
-    # IEC prefixes (powers of 1024)
     b:kib)              expr="$value / 1024" ;;
     kib:b)              expr="$value * 1024" ;;
     b:mib)              expr="$value / 1048576" ;;
@@ -628,7 +750,6 @@ math::unitconvert() {
     tib:gib)            expr="$value * 1024" ;;
     tib:pib)            expr="$value / 1024" ;;
     pib:tib)            expr="$value * 1024" ;;
-    # Disk sectors — 512-byte (traditional)
     sector:b)           expr="$value * 512" ;;
     b:sector)           expr="$value / 512" ;;
     sector:kb)          expr="$value / 2" ;;
@@ -637,26 +758,20 @@ math::unitconvert() {
     mb:sector)          expr="$value * 2000" ;;
     sector:gb)          expr="$value / 2000000" ;;
     gb:sector)          expr="$value * 2000000" ;;
-    sector:kib)         expr="$value / 2" ;;                    # 512*2=1024
+    sector:kib)         expr="$value / 2" ;;
     kib:sector)         expr="$value * 2" ;;
     sector:mib)         expr="$value / 2048" ;;
     mib:sector)         expr="$value * 2048" ;;
     sector:gib)         expr="$value / 2097152" ;;
     gib:sector)         expr="$value * 2097152" ;;
-    # Disk sectors — 4096-byte (Advanced Format)
     sector4k:b)         expr="$value * 4096" ;;
     b:sector4k)         expr="$value / 4096" ;;
-    sector4k:kb)        expr="$value / 244.140625" ;;
-    kb:sector4k)        expr="$value * 244.140625" ;;
-    sector4k:mb)        expr="$value / 244140.625" ;;
-    mb:sector4k)        expr="$value * 244140.625" ;;
-    sector4k:kib)       expr="$value * 4" ;;                    # 4096/1024=4
+    sector4k:kib)       expr="$value * 4" ;;
     kib:sector4k)       expr="$value / 4" ;;
     sector4k:mib)       expr="$value / 256" ;;
     mib:sector4k)       expr="$value * 256" ;;
     sector4k:gib)       expr="$value / 262144" ;;
     gib:sector4k)       expr="$value * 262144" ;;
-    # Cross-sector
     sector:sector4k)    expr="$value / 8" ;;
     sector4k:sector)    expr="$value * 8" ;;
 
@@ -667,9 +782,9 @@ math::unitconvert() {
     us:s)               expr="$value / 1000000" ;;
     s:ns)               expr="$value * 1000000000" ;;
     ns:s)               expr="$value / 1000000000" ;;
-    s:ps)               expr="$value * 1000000000000" ;;        # picoseconds
+    s:ps)               expr="$value * 1000000000000" ;;
     ps:s)               expr="$value / 1000000000000" ;;
-    s:fs)               expr="$value * 1000000000000000" ;;     # femtoseconds
+    s:fs)               expr="$value * 1000000000000000" ;;
     fs:s)               expr="$value / 1000000000000000" ;;
     ms:us)              expr="$value * 1000" ;;
     us:ms)              expr="$value / 1000" ;;
@@ -723,149 +838,4 @@ math::unitconvert() {
     esac
 
     math::bc "$expr" "$scale"
-}
-
-# ==============================================================================
-# UNIT NAME NORMALISER
-# Accepts long-form, plural, and common aliases — returns the short key
-# used by math::unitconvert's case logic
-# ==============================================================================
-
-_math::unitconvert::normalise() {
-    local unit="${1,,}"  # lowercase
-
-    case "$unit" in
-
-    # --- Temperature ---
-    celsius|centigrade|degc|deg_c|"°c")        echo "celsius" ;;
-    fahrenheit|degf|deg_f|"°f")                echo "fahrenheit" ;;
-    kelvin|degk|deg_k|"°k")                    echo "kelvin" ;;
-    # short aliases
-    c)                                          echo "c" ;;
-    f)                                          echo "f" ;;
-    k)                                          echo "k" ;;
-
-    # --- Length ---
-    kilometre|kilometres|kilometer|kilometers|km)  echo "km" ;;
-    metre|metres|meter|meters|m)                   echo "m" ;;
-    centimetre|centimetres|centimeter|centimeters|cm) echo "cm" ;;
-    millimetre|millimetres|millimeter|millimeters|mm) echo "mm" ;;
-    micrometre|micrometres|micrometer|micrometers|micron|microns|um|μm) echo "um" ;;
-    nanometre_si|nanometer_si|nm_si)               echo "nm_si" ;;
-    picometre|picometres|picometer|picometers|pm)   echo "pm" ;;
-    femtometre|femtometres|femtometer|femtometers|fm) echo "fm" ;;
-    mile|miles|mi)                                 echo "mi" ;;
-    foot|feet|ft)                                  echo "ft" ;;
-    inch|inches|in)                                echo "in" ;;
-    yard|yards|yd)                                 echo "yd" ;;
-    nautical_mile|nautical_miles|nauticalmile|nauticalmiles|nm) echo "nm" ;;
-    light_year|light_years|lightyear|lightyears|ly) echo "ly" ;;
-    light_hour|light_hours|lighthour|lighthours|lh) echo "lh" ;;
-    light_day|light_days|lightday|lightdays|ld)     echo "ld" ;;
-    astronomical_unit|astronomical_units|au)        echo "au" ;;
-    parsec|parsecs|pc)                              echo "pc" ;;
-
-    # --- Mass ---
-    kilogram|kilograms|kilogramme|kilogrammes|kg)   echo "kg" ;;
-    gram|grams|gramme|grammes|g)                    echo "g" ;;
-    milligram|milligrams|milligramme|milligrammes|mg) echo "mg" ;;
-    pound|pounds|lb|lbs)                            echo "lb" ;;
-    ounce|ounces|oz)                                echo "oz" ;;
-    tonne|tonnes|metric_ton|metric_tons|t)          echo "t" ;;
-    stone|stones|st)                                echo "st" ;;
-
-    # --- Volume ---
-    litre|litres|liter|liters|l)                   echo "l" ;;
-    millilitre|millilitres|milliliter|milliliters|ml) echo "ml" ;;
-    gallon|gallons|gal)                             echo "gal" ;;
-    fluid_ounce|fluid_ounces|fluidounce|fl_oz|floz) echo "floz" ;;
-    pint|pints|pt)                                  echo "pt" ;;
-    quart|quarts|qt)                                echo "qt" ;;
-    cubic_metre|cubic_meters|m3|m³)                 echo "m3" ;;
-    teaspoon|teaspoons|tsp)                         echo "tsp" ;;
-    tablespoon|tablespoons|tbsp)                    echo "tbsp" ;;
-
-    # --- Speed ---
-    "km/h"|kmh|kph|kilometres_per_hour|kilometers_per_hour) echo "kmh" ;;
-    mph|"mi/h"|miles_per_hour)                      echo "mph" ;;
-    "m/s"|ms|metres_per_second|meters_per_second)   echo "ms" ;;
-    knot|knots)                                     echo "knot" ;;
-    mach)                                           echo "mach" ;;
-    speed_of_light|lightspeed)                      echo "c" ;;
-
-    # --- Pressure ---
-    pascal|pascals|pa)                              echo "pa" ;;
-    kilopascal|kilopascals|kpa)                     echo "kpa" ;;
-    psi|pounds_per_square_inch)                     echo "psi" ;;
-    atmosphere|atmospheres|atm)                     echo "atm" ;;
-    bar|bars)                                       echo "bar" ;;
-    millibar|millibars|mbar)                        echo "mbar" ;;
-    mmhg|millimetre_of_mercury|millimeter_of_mercury|torr) echo "mmhg" ;;
-
-    # --- Energy ---
-    joule|joules|j)                                 echo "j" ;;
-    kilojoule|kilojoules|kj)                        echo "kj" ;;
-    calorie|calories|cal)                           echo "cal" ;;
-    kilocalorie|kilocalories|kcal)                  echo "kcal" ;;
-    kilowatt_hour|kilowatt_hours|kwh|"kw/h")        echo "kwh" ;;
-    btu|british_thermal_unit|british_thermal_units) echo "btu" ;;
-    electronvolt|electronvolts|ev)                  echo "ev" ;;
-
-    # --- Power ---
-    watt|watts|w)                                   echo "w" ;;
-    kilowatt|kilowatts|kw)                          echo "kw" ;;
-    horsepower|hp)                                  echo "hp" ;;
-
-    # --- Digital storage ---
-    bit|bits|b)                                     echo "b" ;;
-    kilobit|kilobits|kb)                            echo "kb" ;;
-    megabit|megabits|mb)                            echo "mb" ;;
-    gigabit|gigabits|gb)                            echo "gb" ;;
-    terabit|terabits|tb)                            echo "tb" ;;
-    petabit|petabits|pb)                            echo "pb" ;;
-    kibibit|kibibits|kib)                           echo "kib" ;;
-    mebibit|mebibits|mib)                           echo "mib" ;;
-    gibibit|gibibits|gib)                           echo "gib" ;;
-    tebibit|tebibits|tib)                           echo "tib" ;;
-    pebibit|pebibits|pib)                           echo "pib" ;;
-    sector|sectors|disk_sector|disk_sectors)        echo "sector" ;;
-    sector4k|sector_4k|4k_sector|4ksector|advanced_format) echo "sector4k" ;;
-
-    # --- Time ---
-    second|seconds|sec|s)                           echo "s" ;;
-    millisecond|milliseconds|ms|msec)               echo "ms" ;;
-    microsecond|microseconds|us|μs|usec)            echo "us" ;;
-    nanosecond|nanoseconds|ns|nsec)                 echo "ns" ;;
-    picosecond|picoseconds|ps|psec)                 echo "ps" ;;
-    femtosecond|femtoseconds|fs|fsec)               echo "fs" ;;
-    minute|minutes|min)                             echo "min" ;;
-    hour|hours|h|hr|hrs)                            echo "h" ;;
-    day|days|d)                                     echo "d" ;;
-    week|weeks)                                     echo "week" ;;
-    year|years|yr|yrs)                              echo "year" ;;
-
-    # --- Angle ---
-    degree|degrees|deg)                             echo "deg" ;;
-    radian|radians|rad)                             echo "rad" ;;
-    gradian|gradians|grad|gon|gons)                 echo "grad" ;;
-    arcminute|arcminutes|arcmin|"'")                echo "arcmin" ;;
-    arcsecond|arcseconds|arcsec|"\"")              echo "arcsec" ;;
-
-    # Already a valid short key — pass through
-    *)                                              echo "$unit" ;;
-    esac
-}
-
-# Wrapper that normalises unit names before dispatching
-# Accepts the same args as math::unitconvert but with natural language units
-# Usage: math::convert from to value [scale]
-# Example: math::convert kilometres miles 100
-#          math::convert "degrees celsius" fahrenheit 37
-#          math::convert light_years parsecs 1
-math::convert() {
-    local from="$1" to="$2" value="$3" scale="${4:-$MATH_SCALE}"
-    local nfrom nto
-    nfrom=$(_math::unitconvert::normalise "$from")
-    nto=$(_math::unitconvert::normalise "$to")
-    math::unitconvert "$nfrom" "$nto" "$value" "$scale"
 }
