@@ -188,7 +188,7 @@ yourmodule::shout() {
 - Bash 4.3+ (associative arrays, namerefs)
 - Bash 5.0+ for a handful of functions (guarded with `runtime::is_minimum_bash 5`)
 - Standard GNU coreutils (`awk`, `sed`, `find`, `sort`)
-- Optional: `bc` for floating point math, `curl`/`wget` for networking, `openssl` for crypto hashes
+- Optional: `bc` for floating point math, `curl`/`wget` for networking, `openssl` for crypto hashes, `git` for git repository based operation
 
 ---
 
