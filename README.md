@@ -183,6 +183,14 @@ yourmodule::shout() {
 
 ---
 
+### Why is the said 'single-file framework' file not included in the repository tree?
+
+The repository tree is meant for when you actually want to do more than just 'download one file in releases and leave'
+
+Including a pre-compiled file also risks it drifting out of sync with the source in src/, so we'd rather you compile it yourself. It's one command, and you get the flexibility of the modular architecture as a bonus.
+
+---
+
 ## Requirements
 
 - Bash 4.3+ (associative arrays, namerefs)
