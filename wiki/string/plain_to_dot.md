@@ -1,0 +1,22 @@
+# `string::plain_to_dot`
+
+plain → dot.case
+
+## Usage
+
+```bash
+string::plain_to_dot ...
+```
+
+## Source
+
+```bash
+string::plain_to_dot() {
+  local s="${1// /.}"
+  echo "${s,,}"
+}
+```
+
+## Module
+
+[`string`](../string.md)
