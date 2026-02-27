@@ -32,15 +32,8 @@
 #
 # Note: If an array name is provided as the third argument, the 
 # function uses 'readarray' to populate that variable in the 
-# current shell environment.
-#
-# Warning: This function uses 'awk' for splitting. Very large 
-# strings passed through a pipe may experience a slight 
-# performance hit compared to pure Bash string manipulation.
-#
-# Important: If you do not provide an array name, the function 
-# will output the elements to stdout, which is useful for 
-# piping into other commands.
+# current shell environment. Without it, elements are printed to
+# stdout, which is useful for piping into other commands.
 array::from_string() {
     [[ $# -lt 2 ]] && { echo "Usage: array::from_string <delimiter> <string> [array_name]" >&2; return 1; }
 
@@ -82,11 +75,8 @@ array::from_string() {
 #
 # Note: This function temporarily sets IFS to a newline character 
 # to ensure that spaces within a single line do not cause the line 
-# to be split into multiple elements.
-#
-# Warning: This implementation relies on the input being passed as 
-# a single argument. If the input string is extremely large, you 
-# may hit shell argument length limits (ARG_MAX).
+# to be split into multiple elements. Input is received as a single
+# argument, so very large strings may hit shell argument length limits (ARG_MAX).
 array::from_lines() {
     local IFS=$'\n'
     local -a parts=($1)
@@ -113,11 +103,8 @@ array::from_lines() {
 #       echo "Processing iteration $i..."
 #   done
 #
-# Note: The 'step' argument is optional and defaults to 1.
-#
-# Warning: This function uses a 'less than or equal to' (<=) 
-# comparison. If the 'start' is already greater than 'end', 
-# the function will return nothing.
+# Note: The 'step' argument is optional and defaults to 1. If 'start'
+# is already greater than 'end', the function returns nothing.
 #
 # Tip: Unlike {start..end} brace expansion, this function 
 # handles variables perfectly:
@@ -150,14 +137,9 @@ array::range() {
 #   count=$(array::length "$@")
 #   echo "Received $count arguments."
 #
-# Note: This function counts the number of arguments passed directly 
-# to it. It does not differentiate between empty strings and 
-# populated strings.
-#
-# Warning: If you pass a single quoted string containing spaces 
-# (e.g., "a b c"), this function will return 1, as it only sees 
-# one argument. To count elements in an array, always expand it 
-# using "${my_array[@]}"
+# Note: Counts arguments, not characters. A single quoted string containing
+# spaces (e.g., "a b c") counts as 1. To count elements in an array,
+# always expand it using "${my_array[@]}".
 array::length() {
     echo "$#"
 }
@@ -180,13 +162,9 @@ array::length() {
 #       exit 0
 #   fi
 #
-# Note: This function counts the number of arguments passed to it. 
-# It does not check if those arguments are empty strings—only 
-# if they exist.
-#
-# Warning: If you pass an array with a single empty string element 
-# (e.g. arr=("")), this function will return 1 (False) because 
-# one argument was still provided.
+# Note: Counts arguments, not string content. An array with a single empty
+# string element (e.g. arr=("")) will return 1 (not empty) because one
+# argument was still passed.
 array::is_empty() {
     [[ "$#" -eq 0 ]]
 }
@@ -212,9 +190,6 @@ array::is_empty() {
 #
 # Note: The comparison is an exact match and is case-sensitive. 
 # "Apple" will not match "apple".
-#
-# Warning: Since this uses a linear search, performance may degrade 
-# on exceptionally large arrays (thousands of elements).
 array::contains() {
     local needle="$1"; shift
     local el
@@ -242,15 +217,9 @@ array::contains() {
 #       echo "Bob is at position $pos"
 #   fi
 #
-# Note: The search stops at the first match it encounters. If the 
-# value appears multiple times, only the lowest index is returned.
-#
-# Warning: This function is case-sensitive. Searching for "BOB" 
-# will return -1 if the array only contains "bob".
-#
-# Important: Unlike many other functions in this module, this 
-# returns a non-zero exit code (1) when the item is not found, 
-# making it easy to use in 'if' or 'while' statements.
+# Note: The search stops at the first match. Case-sensitive — "BOB"
+# will not match "bob". Returns -1 and exit code 1 when not found,
+# making it easy to use directly in 'if' statements.
 array::index_of() {
     local needle="$1"; shift
     local i=0
@@ -277,12 +246,7 @@ array::index_of() {
 #   files=("file_c.txt" "file_b.txt" "file_a.txt")
 #   latest=$(array::first "${files[@]}")
 #
-# Note: If no arguments are provided, the function echoes an empty 
-# string and returns 0.
-#
-# Warning: This function only returns the first positional parameter. 
-# If you pass a single space-separated string instead of expanded 
-# array elements, it will return the entire string.
+# Note: If no arguments are provided, the function echoes an empty string.
 array::first() {
     echo "$1"
 }
@@ -300,19 +264,10 @@ array::first() {
 #   # Getting the last argument passed to a script
 #   last_arg=$(array::last "$@")
 #
-# Note: If no arguments are provided, the function echoes an empty 
-# string.
-#
-# Warning: This function uses 'eval' internally to access the 
-# last positional parameter. While safe here, it highlights that 
-# the function is designed specifically for positional arguments 
-# (e.g., "${my_array[@]}").
+# Note: If no arguments are provided, the function echoes an empty string.
 #
 # Tip: This is significantly faster than calculating the length 
 # and subtracting one to access the index manually.
-array::last() {
-    eval echo "\${$#}"
-}
 array::last() {
     eval echo "\${$#}"
 }
@@ -333,15 +288,11 @@ array::last() {
 #   selected=$(array::get 1 "${colors[@]}")
 #   echo "You chose: $selected"
 #
-# Note: Like standard Bash arrays, this function uses zero-based 
-# indexing. '0' is the first element, '1' is the second, and so on.
+# Note: Uses zero-based indexing ('0' is the first element). Out-of-bounds
+# indices echo an empty string with no error.
 #
 # Tip: In Bash 4.2+, you can use negative indices (e.g., -1) to 
 # access elements starting from the end of the array.
-#
-# Warning: If the index is out of bounds, the function will echo 
-# an empty string. It does not produce an error code for 
-# non-existent indices.
 array::get() {
     local idx="$1"; shift
     local -a arr=("$@")
@@ -366,10 +317,6 @@ array::get() {
 #
 # Note: Like other array functions in this module, the comparison 
 # is an exact, case-sensitive match.
-#
-# Warning: If no matches are found, the function echoes 0. Ensure 
-# your script handles a 0 result appropriately if you are using 
-# it for conditional logic.
 array::count_of() {
     local needle="$1" count=0; shift
     for el in "$@"; do
@@ -399,15 +346,8 @@ array::count_of() {
 #
 # Note: This is a safer alternative to 'echo' because 'printf' 
 # correctly handles elements that start with a hyphen (-) or 
-# contain backslashes.
-#
-# Warning: If an element itself contains a newline character, 
-# this function will split it into two lines, which may break 
-# downstream processing.
-#
-# Tip: This function is essential for "normalizing" data before 
-# piping it into other array:: functions that expect line-delimited 
-# input.
+# contain backslashes. Elements that themselves contain a newline
+# will be split across multiple output lines.
 array::print() {
     printf '%s\n' "$@"
 }
@@ -429,10 +369,6 @@ array::print() {
 #
 # Note: This function creates a local copy of the array and 
 # iterates backwards through the indices.
-#
-# Warning: For extremely large arrays, the creation of a local 
-# array variable inside the function may consume significant 
-# memory.
 #
 # Tip: This is often used in conjunction with 'sort' to perform 
 # a reverse alphabetical or numeric sort if the standard 'sort -r' 
@@ -493,11 +429,9 @@ array::flatten() {
 #   # Skipping the first item and taking the next two
 #   middle_chunk=$(array::slice 1 2 "${results[@]}")
 #
-# Note: Like other array utilities, this uses zero-based indexing.
-#
-# Warning: If the requested length exceeds the number of available 
-# elements, Bash will simply return all elements from the start 
-# index to the end of the array without erroring.
+# Note: Uses zero-based indexing. If the requested length exceeds the
+# available elements, Bash silently returns everything from the start
+# index to the end of the array.
 #
 # Tip: To slice from a starting point all the way to the end 
 # of the list, you can provide the total array length as the 
@@ -523,16 +457,13 @@ array::slice() {
 #   queue=$(array::push "log3.txt" "${queue[@]}")
 #
 # Note: The new element is the first argument, and the existing 
-# array elements follow it. This order allows the function to 
-# use 'shift' to isolate the new item.
-#
-# Warning: This function outputs the entire resulting list. To 
-# update an actual Bash array variable, you must capture the 
-# output (e.g., using readarray).
+# array elements follow it. To update an actual Bash array variable,
+# capture the output with readarray.
 #
 # Tip: Unlike a standard 'push' in many languages, the new item 
 # goes as the FIRST argument in the function call, but ends up 
-# LAST in the output.array::push() {
+# LAST in the output.
+array::push() {
     local new="$1"; shift
     printf '%s\n' "$@" "$new"
 }
@@ -552,14 +483,12 @@ array::slice() {
 #   path_segments=(usr local bin)
 #   parent_path=$(array::pop "${path_segments[@]}")
 #
-# Note: This function outputs the modified list. If the input list 
-# has only one element, the function will return an empty string.
-#
-# Warning: This implementation uses negative indexing (unset 'arr[-1]'), 
-# which requires Bash 4.3 or newer.
+# Note: Requires Bash 4.3+ (uses negative index unset). If the input
+# list has only one element, returns an empty string.
 #
 # Tip: To capture the result back into an array, use:
-#   readarray -t new_array < <(array::pop "${old_array[@]}")array::pop() {
+#   readarray -t new_array < <(array::pop "${old_array[@]}")
+array::pop() {
     local -a arr=("$@")
     unset 'arr[-1]'
     printf '%s\n' "${arr[@]}"
@@ -582,15 +511,8 @@ array::slice() {
 #   # Result: urgent_task, task1, task2
 #
 # Note: Like array::push, the new element is the first argument, 
-# and the existing array elements follow it.
-#
-# Warning: This function outputs the entire resulting list. To 
-# update a Bash array variable, you must capture the output 
-# (e.g., using readarray).
-#
-# Tip: Using unshift on a large array is generally slower than 
-# push in terms of computational complexity, though in Bash 
-# scripts the difference is usually negligible for standard tasks.
+# and the existing array elements follow it. To update a Bash array
+# variable, capture the output with readarray.
 array::unshift() {
     local new="$1"; shift
     printf '%s\n' "$new" "$@"
@@ -612,11 +534,8 @@ array::unshift() {
 #   params=$(array::shift "${args[@]}")
 #   # Result: upload, file.txt
 #
-# Note: This is a direct wrapper around the Bash 'shift' builtin, 
-# making it extremely fast and efficient.
-#
-# Warning: If you pass only one element, the function will 
-# return an empty string (as there is nothing left to shift).
+# Note: This is a direct wrapper around the Bash 'shift' builtin. 
+# Passing only one element returns an empty string.
 #
 # Tip: To handle the shifted value and the remaining list 
 # separately in your code:
@@ -642,16 +561,8 @@ array::shift() {
 #   items=("ticket_01" "ticket_02" "ticket_03")
 #   remaining=$(array::remove_at 1 "${items[@]}")
 #
-# Note: This function uses zero-based indexing. Passing an index 
-# of '0' removes the first element.
-#
-# Warning: If the provided index is higher than the number of 
-# elements in the array, the function will simply return the 
-# original list unchanged.
-#
-# Tip: This function is more efficient than 'array::remove' if you 
-# already know the position, as it doesn't need to perform 
-# string comparisons on every element.
+# Note: Uses zero-based indexing. If the index exceeds the array length,
+# the original list is returned unchanged.
 array::remove_at() {
     local idx="$1" i=0; shift
     for el in "$@"; do
@@ -675,15 +586,9 @@ array::remove_at() {
 #   dirs=("/usr/bin" "/tmp" "/usr/local/bin")
 #   clean_dirs=$(array::remove "/tmp" "${dirs[@]}")
 #
-# Note: This function performs an exact string match. It will not 
-# remove partial matches (e.g., removing "cat" will not remove "category").
+# Note: Exact string match only — partial matches are not removed.
 #
-# Warning: This removes ALL occurrences of the target value, not 
-# just the first one found.
-#
-# Tip: Unlike 'array::pop' or 'array::shift', this function does 
-# not care about the position of the element—it finds it wherever 
-# it lives in the list.
+# Warning: Removes ALL occurrences of the target value, not just the first.
 array::remove() {
     local target="$1"; shift
     for el in "$@"; do
@@ -706,12 +611,8 @@ array::remove() {
 #   nodes=("node1:up" "node2:down" "node3:up")
 #   nodes=$(array::set 1 "node2:up" "${nodes[@]}")
 #
-# Note: This function uses zero-based indexing (the first element 
-# is index 0).
-#
-# Warning: This function iterates through the entire list to 
-# rebuild the output. For massive arrays, this can be slower 
-# than direct Bash array assignment (arr[1]="new").
+# Note: Uses zero-based indexing. If the index is out of bounds,
+# the original list is returned unchanged.
 #
 # Tip: If the provided index is out of bounds (larger than the 
 # list), the function will return the original list without 
@@ -740,12 +641,7 @@ array::set() {
 #   full_name=$(array::insert_at 1 "Quincy" "${names[@]}")
 #
 # Note: If the index provided is greater than or equal to the number 
-# of elements, the new value will be appended to the very end of 
-# the list.
-#
-# Warning: This function outputs the entire resulting list, not 
-# just the modified portion. If you are working with very large 
-# arrays, be prepared to capture the full output.
+# of elements, the new value will be appended to the end of the list.
 #
 # Tip: Using an index of 0 will effectively prepend the value to 
 # the beginning of the list.
@@ -779,13 +675,11 @@ array::insert_at() {
 #   logs=("INFO: ok" "ERROR: fail" "DEBUG: trace" "CRITICAL: halt")
 #   failures=$(array::filter "ERROR|CRITICAL" "${logs[@]}")
 #
-# Note: This function uses Bash's native regular expression operator 
-# (=~), which typically follows Extended Regular Expression (ERE) 
-# syntax.
+# Note: Uses Bash's native regular expression operator (=~), which
+# follows Extended Regular Expression (ERE) syntax.
 #
-# Warning: If the regex is invalid or contains unescaped characters 
-# that the shell interprets, the function may fail or produce 
-# unexpected results. Always test complex regex patterns separately.
+# Warning: An invalid or unescaped regex pattern may cause silent
+# failures or unexpected matches. Test complex patterns separately.
 array::filter() {
     local regex="$1"; shift
     for el in "$@"; do
@@ -808,13 +702,8 @@ array::filter() {
 #   users=("admin" "_spotlight" "guest" "_www")
 #   human_users=$(array::reject "^_" "${users[@]}")
 #
-# Note: This function uses Bash's native regular expression 
-# operator (=~). The regex should be provided without quotes 
-# inside the function for complex patterns, but the function 
-# handles the input as a variable correctly.
-#
-# Warning: Since this uses Bash regex, it follows Extended Regular 
-# Expression (ERE) syntax.
+# Note: Uses Bash's native ERE regex via (=~). Provide the regex as
+# a variable reference, not a quoted pattern, for reliable matching.
 #
 # Tip: This is the perfect companion to 'array::filter'. Use 
 # 'filter' to keep what you want, and 'reject' to throw away 
@@ -839,13 +728,9 @@ array::reject() {
 #   tags=("bash" "" "linux" "" "coding")
 #   clean_tags=$(array::compact "${tags[@]}")
 #
-# Note: This function checks for a non-zero string length. A string 
-# containing only whitespace (like " ") is technically non-empty and 
-# will be preserved.
-#
-# Warning: Since each element is echoed on a new line, elements 
-# that originally contained newline characters will be split into 
-# multiple lines in the output.
+# Note: Checks for non-zero string length. A string containing only
+# whitespace (like " ") is technically non-empty and will be preserved.
+# Elements containing newline characters will be split into multiple lines.
 array::compact() {
     for el in "$@"; do
         [[ -n "$el" ]] && echo "$el"
@@ -872,12 +757,9 @@ array::compact() {
 #   id_string=$(array::join "," "${ids[@]}")
 #   echo "Selected IDs: $id_string"
 #
-# Note: The delimiter is only placed *between* elements. It will not 
-# be added to the beginning or the end of the final string.
-#
-# Warning: If your elements already contain the delimiter character, 
-# the resulting string may be ambiguous and difficult to split 
-# back apart later.
+# Note: The delimiter is only placed *between* elements, not at the
+# start or end. If elements already contain the delimiter character,
+# the resulting string may be ambiguous to split later.
 #
 # Tip: You can pass an empty string as the delimiter if you want to 
 # concatenate elements directly together with no separation.   
@@ -906,15 +788,8 @@ array::join() {
 #   total_used=$(array::sum "${usage[@]}")
 #   echo "Total disk usage: ${total_used}GB"
 #
-# Note: This function uses Bash arithmetic $(( )). It is designed 
-# for integers and does not support floating-point numbers (decimals).
-#
-# Warning: If the input contains non-numeric strings, Bash may 
-# interpret them as 0 or as variable names, which could lead to 
-# arithmetic errors or unexpected totals.
-#
-# Tip: If you are dealing with very large numbers that exceed 
-# a 64-bit integer, Bash may overflow.
+# Note: Uses Bash arithmetic ($(( ))). Integers only — no floating-point
+# support. Non-numeric strings may be treated as 0 or as variable names.
 array::sum() {
     local total=0
     for el in "$@"; do
@@ -939,14 +814,9 @@ array::sum() {
 #   best_ping=$(array::min "${latencies[@]}")
 #   echo "Lowest latency: ${best_ping}ms"
 #
-# Note: This function uses Bash arithmetic evaluation (( )). It 
-# is strictly for integer comparison.
-#
-# Warning: If no arguments are provided, the local variable 'min' 
-# will be empty, and the function will echo a blank line.
-#
-# Tip: Like array::max, this assumes the first argument is a valid 
-# number to establish the initial baseline.
+# Note: Uses Bash arithmetic. Integers only. Assumes the first argument
+# is a valid number as the initial baseline. Returns empty if called
+# with no arguments.
 array::min() {
     local min="$1"; shift
     for el in "$@"; do
@@ -971,15 +841,9 @@ array::min() {
 #   top_score=$(array::max "${scores[@]}")
 #   echo "The winning score is $top_score"
 #
-# Note: This function uses Bash arithmetic evaluation (( )). It 
-# is designed for integers.
-#
-# Warning: If non-numeric strings are passed, Bash may interpret 
-# them as 0 or variables, leading to unpredictable results. Ensure 
-# your input is strictly numeric.
-#
-# Important: This function assumes the first argument is a valid 
-# number to establish a baseline for comparison.
+# Note: Uses Bash arithmetic. Integers only. Assumes the first argument
+# is a valid number as the initial baseline. Non-numeric strings may
+# be treated as 0 or variable names.
 array::max() {
     local max="$1"; shift
     for el in "$@"; do
@@ -1008,14 +872,10 @@ array::max() {
 #   proj_b="git vim jq"
 #   common=$(array::intersect "$proj_a" "$proj_b")
 #
-# Note: The comparison is an exact, case-sensitive match. This 
-# function uses a nested loop (O(n*m)), so it may be slow with 
-# very large input strings.
+# Note: Exact, case-sensitive match. Uses a nested loop (O(n*m)).
 #
-# Warning: This function expects two quoted, space-separated 
-# strings. If you pass expanded arrays (e.g., "${arr[@]}"), 
-# it will only compare the first element of the first array 
-# against the first element of the second.
+# Warning: Expects two quoted, space-separated strings — not expanded
+# arrays. Passing "${arr[@]}" will only compare the first elements.
 array::intersect() {
     local -a a=($1) b=($2)
     for el in "${a[@]}"; do
@@ -1040,14 +900,10 @@ array::intersect() {
 #   installed="git tmux"
 #   array::diff "$required" "$installed"
 #
-# Note: The comparison is an exact, case-sensitive match. This 
-# function performs a nested loop (O(n*m)), so performance will 
-# scale poorly with two very large lists.
+# Note: Exact, case-sensitive match. Uses a nested loop (O(n*m)).
 #
-# Warning: This function expects two space-separated strings as 
-# arguments, not two expanded arrays. Passing arrays directly 
-# (e.g., "${arr1[@]}") will result in only the first element 
-# being processed correctly.
+# Warning: Expects two quoted, space-separated strings — not expanded
+# arrays. Passing "${arr[@]}" will only process the first element.
 array::diff() {
     local -a a=($1) b=($2)
     for el in "${a[@]}"; do
@@ -1076,15 +932,10 @@ array::diff() {
 #   all_staff=$(array::union "$admins" "$editors")
 #   # Result: alice, bob, charlie
 #
-# Note: This function expects two space-separated strings as 
-# arguments. It then expands them into internal arrays for processing.
+# Note: Expects two space-separated strings as arguments.
 #
-# Warning: Because the input arrays are passed as space-separated 
-# strings, this function may not correctly handle elements that 
-# contain spaces.
-#
-# Tip: This function is essentially a shortcut for:
-#   array::unique "${array1[@]}" "${array2[@]}"
+# Warning: Elements containing internal spaces will be split
+# incorrectly when the strings are expanded into arrays.
 array::union() {
     local -a a=($1) b=($2)
     array::unique "${a[@]}" "${b[@]}"
@@ -1109,14 +960,9 @@ array::union() {
 #   names=("Zoe" "Adam" "Charlie")
 #   sorted_names=$(array::sort "${names[@]}")
 #
-# Note: This function uses the system's default 'sort' command. 
-# The sorting behavior (e.g., how it handles case or special 
-# characters) depends on your system's LC_COLLATE setting.
-#
-# Warning: This performs an alphabetical sort by default. For 
-# numeric sorting (where "10" comes after "2"), you would 
-# typically need to use 'sort -n' manually or a specific numeric 
-# sort utility.
+# Note: Uses the system 'sort' command, so output order depends on
+# your LC_COLLATE locale setting. This is an alphabetical sort —
+# for numeric sorting use array::sort::numeric.
 #
 # Tip: Combine this with 'array::unique' to get a sorted list 
 # of distinct values.
@@ -1158,13 +1004,11 @@ array::sort::numeric_reverse() {
 #       echo "Sequence mismatch detected!"
 #   fi
 #
-# Note: This function requires an exact match for every element 
-# index. If the elements are the same but in a different order, 
-# the function will return 1.
+# Note: Requires an exact match for every element at every index.
+# Same elements in a different order will return 1.
 #
-# Warning: Like array::diff, this function expects two quoted, 
-# space-separated strings. Passing expanded arrays directly 
-# will not work as intended.
+# Warning: Expects two quoted, space-separated strings — not expanded
+# arrays. Passing "${arr[@]}" will not work as intended.
 
 array::equals() {
     local -a a=($1) b=($2)
@@ -1195,13 +1039,10 @@ array::equals() {
 #   # alice /home/alice
 #   # bob /home/bob
 #
-# Note: This function uses a "shortest-win" logic. If the two 
-# lists are of different lengths, it stops at the end of the 
-# shorter list.
+# Note: Uses "shortest-wins" logic — stops at the end of the shorter list.
 #
-# Warning: Like array::union, this function expects space-separated 
-# strings. It will not correctly handle elements that contain 
-# internal spaces, as they will be split into separate array items.
+# Warning: Expects space-separated strings. Elements containing internal
+# spaces will be split incorrectly when expanded into arrays.
 #
 # Tip: To process the results of a zip in a loop:
 #   while read -r key val; do
@@ -1232,13 +1073,9 @@ array::zip() {
 #   new_order=$(array::rotate 1 "${servers[@]}")
 #   # Result: srv2 srv3 srv1
 #
-# Note: This function uses the modulo operator (n % len), meaning 
-# if you rotate a list of 5 items by 6, it will correctly perform 
-# a rotation of 1.
-#
-# Warning: This function only rotates to the left. To rotate 
-# to the right, you can subtract the desired shift from the total 
-# length of the array.
+# Note: Uses modulo so rotating by more than the array length wraps
+# correctly. Only rotates left — to rotate right, subtract the
+# desired shift from the total length.
 #
 # Tip: Providing a rotation of 0 or a multiple of the array's 
 # length will return the list in its original order.
@@ -1266,12 +1103,9 @@ array::rotate() {
 #       echo "Processing batch: $batch"
 #   done
 #
-# Note: If the total number of elements isn't evenly divisible by the 
-# chunk size, the final chunk will contain the remaining elements.
-#
-# Warning: This function joins elements with spaces. If your array 
-# elements contain spaces themselves, the output chunks may be 
-# difficult to parse correctly using standard 'read' loops.
+# Note: If the total element count isn't evenly divisible by the chunk
+# size, the final chunk contains the remainder. Elements with internal
+# spaces may be difficult to parse in the space-separated output.
 array::chunk() {
     local size="$1" i=0; shift
     local chunk=""
@@ -1307,12 +1141,8 @@ array::chunk() {
 #   clean_paths=$(array::unique "${raw_paths[@]}")
 #   # Result: /usr/bin, /bin, /usr/local/bin
 #
-# Note: This function uses an associative array 'seen' for 
-# O(n) lookup performance, making it very efficient for 
-# large datasets.
-#
-# Warning: This implementation requires Bash 4.0 or newer because 
-# it relies on associative arrays (declare -A).
+# Note: Uses an associative array for O(n) lookup, so it's efficient
+# on large datasets. Requires Bash 4.0+ (associative arrays).
 #
 # Tip: Because it preserves order, it is often superior to 
 # 'sort -u' if the sequence of your data carries meaning (like 
